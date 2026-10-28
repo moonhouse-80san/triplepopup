@@ -1,0 +1,335 @@
+/* ============================================================
+   triplepopup 프론트 팝업 CSS  ·  PLAYWEBON
+   v3 : 클래스 네임스페이스 분리 (.triplepopup-pop-*)
+        루트 #triplepopup-pop-root 로 스코프하여 사이트 테마와 충돌 차단
+   ============================================================ */
+
+#triplepopup-pop-root {
+    --tpop-pop-lh-tight: 1.28;
+    --tpop-pop-lh-base: 1.55;
+
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background: rgba(0,0,0,0.42);
+    -webkit-backdrop-filter: saturate(120%) blur(8px);
+    backdrop-filter: saturate(120%) blur(8px);
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+                 'SF Pro Display', 'SF Pro Text', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    animation: triplepopup-pop-fade 0.3s ease;
+}
+
+/* 테마 스타일 무력화 리셋 */
+#triplepopup-pop-root,
+#triplepopup-pop-root *,
+#triplepopup-pop-root *::before,
+#triplepopup-pop-root *::after { box-sizing: border-box; }
+#triplepopup-pop-root div,
+#triplepopup-pop-root span,
+#triplepopup-pop-root button,
+#triplepopup-pop-root img {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    text-shadow: none;
+    text-transform: none;
+}
+#triplepopup-pop-root img { display: block; max-width: none; }
+
+@keyframes triplepopup-pop-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes triplepopup-pop-rise {
+    from { opacity: 0; transform: translateY(14px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#triplepopup-pop-root .triplepopup-pop-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: triplepopup-pop-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 카드 무대 — 좌우 버튼은 이 위에 absolute 로 겹쳐 올림 */
+#triplepopup-pop-root .triplepopup-pop-stage { position: relative; }
+
+#triplepopup-pop-root .triplepopup-pop-viewport {
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+#triplepopup-pop-root .triplepopup-pop-track {
+    display: flex;
+    align-items: flex-start;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+
+/* 좌우 네비 버튼 */
+#triplepopup-pop-root .triplepopup-pop-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.72);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    backdrop-filter: saturate(160%) blur(14px);
+    color: #1d1d1f;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+#triplepopup-pop-root .triplepopup-pop-nav-btn svg { display: block; }
+#triplepopup-pop-root .triplepopup-pop-nav-btn:hover {
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+    transform: translateY(-50%) scale(1.06);
+}
+#triplepopup-pop-root .triplepopup-pop-nav-btn:active { transform: translateY(-50%) scale(0.94); }
+#triplepopup-pop-root .triplepopup-pop-nav-btn.prev { left: 14px; }
+#triplepopup-pop-root .triplepopup-pop-nav-btn.next { right: 14px; }
+
+/* 카드 */
+#triplepopup-pop-root .triplepopup-pop-card {
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.20);
+}
+
+/* 이미지 영역 — 가로(카드 폭) 기준, 세로는 이미지/콘텐츠 비율에 맞춰 자동 */
+#triplepopup-pop-root .triplepopup-pop-media {
+    position: relative;
+    flex: 0 0 auto;
+    width: 100%;
+    overflow: hidden;
+}
+#triplepopup-pop-root .triplepopup-pop-media.triplepopup-pop-clickable { cursor: pointer; }
+#triplepopup-pop-root .triplepopup-pop-media img {
+    display: block;
+    width: 100%;
+    height: auto;          /* 원본 비율 유지, 세로는 자동 */
+    max-height: 72vh;      /* 뷰포트 초과 시에만 상한 */
+    object-fit: contain;   /* 상한에 걸릴 때도 잘리지 않도록 */
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#triplepopup-pop-root .triplepopup-pop-card:hover .triplepopup-pop-media.triplepopup-pop-clickable img {
+    transform: scale(1.045);
+}
+
+/* 상단 배지 (이미지 위 absolute) */
+#triplepopup-pop-root .triplepopup-pop-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 2;
+    display: inline-block;
+    max-width: calc(100% - 32px);
+    padding: 0.38em 0.9em;
+    border-radius: 980px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: -0.002em;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-backdrop-filter: saturate(140%) blur(2px);
+    backdrop-filter: saturate(140%) blur(2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transition: filter 0.25s ease, transform 0.25s ease;
+}
+#triplepopup-pop-root .triplepopup-pop-card:hover .triplepopup-pop-badge {
+    filter: brightness(0.9) saturate(1.1);
+    transform: scale(1.04);
+}
+
+/* 이미지 없는 카드 — 배지 바 (일반 흐름) */
+#triplepopup-pop-root .triplepopup-pop-badge-bar {
+    flex: 0 0 auto;
+    padding: 12px 16px 0;
+}
+#triplepopup-pop-root .triplepopup-pop-badge-static {
+    position: static;
+    top: auto;
+    left: auto;
+    max-width: 100%;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+}
+#triplepopup-pop-root .triplepopup-pop-card:hover .triplepopup-pop-badge-static {
+    filter: none;
+    transform: none;
+}
+
+/* 이미지 위 카피 */
+#triplepopup-pop-root .triplepopup-pop-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    padding: 72px 24px 22px;
+    background: linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.36) 54%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+}
+#triplepopup-pop-root .triplepopup-pop-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: var(--tpop-pop-lh-tight);
+    letter-spacing: -0.026em;
+    color: #fff;
+    white-space: pre-line;
+    word-break: keep-all;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.38);
+}
+#triplepopup-pop-root .triplepopup-pop-sub {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: var(--tpop-pop-lh-base);
+    letter-spacing: -0.008em;
+    color: #f0f0f2;
+    white-space: pre-line;
+    word-break: keep-all;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.38);
+}
+
+/* 이미지 없는 카드 — 타이틀/서브 (일반 흐름, 어두운 글자) */
+#triplepopup-pop-root .triplepopup-pop-texthead {
+    flex: 0 0 auto;
+    padding: 12px 16px 0;
+}
+#triplepopup-pop-root .triplepopup-pop-title-static {
+    color: #1d1d1f;
+    text-shadow: none;
+    font-size: 20px;
+}
+#triplepopup-pop-root .triplepopup-pop-sub-static {
+    color: #6e6e73;
+    text-shadow: none;
+    margin-top: 6px;
+}
+
+/* 이미지 위 HTML 영역 — 여백·배경은 입력한 HTML 에서 직접 지정 */
+#triplepopup-pop-root .triplepopup-pop-html {
+    font-size: 14px;
+    line-height: var(--tpop-pop-lh-base);
+    letter-spacing: -0.008em;
+    color: #1d1d1f;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+#triplepopup-pop-root .triplepopup-pop-html-top { flex: 0 0 auto; width: 100%; padding: 12px 16px; }
+#triplepopup-pop-root .triplepopup-pop-html-text { padding: 14px 20px 18px; font-size: 16px; }
+#triplepopup-pop-root .triplepopup-pop-html-text.triplepopup-pop-clickable { cursor: pointer; }
+/* 머리말·타이틀 바로 아래 본문: 상단 여백을 더 줄여 간격 최소화 */
+#triplepopup-pop-root .triplepopup-pop-badge-bar + .triplepopup-pop-html-text,
+#triplepopup-pop-root .triplepopup-pop-badge-bar + .triplepopup-pop-texthead,
+#triplepopup-pop-root .triplepopup-pop-texthead + .triplepopup-pop-html-text {
+    padding-top: 10px;
+}
+#triplepopup-pop-root .triplepopup-pop-html-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 3;
+    padding: 16px 20px;
+    pointer-events: none; /* 빈 곳은 아래 이미지 클릭 통과, 링크/버튼만 반응 */
+}
+#triplepopup-pop-root .triplepopup-pop-html-overlay a,
+#triplepopup-pop-root .triplepopup-pop-html-overlay button { pointer-events: auto; }
+#triplepopup-pop-root .triplepopup-pop-html img { display: inline-block; max-width: 100%; height: auto; }
+#triplepopup-pop-root .triplepopup-pop-html p { margin: 0 0 0.6em; }
+#triplepopup-pop-root .triplepopup-pop-html p:last-child { margin-bottom: 0; }
+#triplepopup-pop-root .triplepopup-pop-html a { color: #0071e3; }
+
+/* 하단 CTA 버튼 */
+#triplepopup-pop-root .triplepopup-pop-footer {
+    flex-shrink: 0;
+    height: 52px;
+    padding: 0 20px;
+    line-height: 52px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.014em;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#triplepopup-pop-root .triplepopup-pop-footer.triplepopup-pop-clickable {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+#triplepopup-pop-root .triplepopup-pop-footer.triplepopup-pop-clickable:hover { opacity: 0.9; }
+
+/* 하단 바 */
+#triplepopup-pop-root .triplepopup-pop-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 14px;
+}
+#triplepopup-pop-root .triplepopup-pop-today-close,
+#triplepopup-pop-root .triplepopup-pop-close-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 2px;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.006em;
+    color: rgba(255,255,255,0.82);
+    cursor: pointer;
+    transition: color 0.18s ease;
+}
+#triplepopup-pop-root .triplepopup-pop-today-close:hover,
+#triplepopup-pop-root .triplepopup-pop-close-btn:hover { color: #fff; }
+
+/* 모바일 */
+@media (max-width: 767px) {
+    #triplepopup-pop-root .triplepopup-pop-nav-btn { width: 40px; height: 40px; }
+    #triplepopup-pop-root .triplepopup-pop-nav-btn svg { width: 20px; height: 20px; }
+    #triplepopup-pop-root .triplepopup-pop-nav-btn.prev { left: 10px; }
+    #triplepopup-pop-root .triplepopup-pop-nav-btn.next { right: 10px; }
+    #triplepopup-pop-root .triplepopup-pop-overlay { padding: 60px 20px 18px; }
+    #triplepopup-pop-root .triplepopup-pop-title { font-size: 20px; }
+    #triplepopup-pop-root .triplepopup-pop-sub { font-size: 13px; margin-top: 7px; }
+    #triplepopup-pop-root .triplepopup-pop-footer { height: 48px; line-height: 48px; font-size: 14px; }
+}
+
+/* 모션 최소화 선호 */
+@media (prefers-reduced-motion: reduce) {
+    #triplepopup-pop-root,
+    #triplepopup-pop-root .triplepopup-pop-wrap { animation: none; }
+    #triplepopup-pop-root .triplepopup-pop-track,
+    #triplepopup-pop-root .triplepopup-pop-media img { transition: none; }
+}

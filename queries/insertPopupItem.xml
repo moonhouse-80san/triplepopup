@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<query id="insertPopupItem" action="insert">
+    <tables><table name="triplepopup_slots" /></tables>
+    <columns>
+        <column name="slot_number"     var="slot_number" />
+        <column name="badge_text"      var="badge_text" />
+        <column name="badge_bg_color"  var="badge_bg_color" />
+        <column name="badge_text_color" var="badge_text_color" />
+        <column name="body_image"      var="body_image" />
+        <column name="body_images"     var="body_images" />
+        <column name="title_text"      var="title_text" />
+        <column name="sub_text"        var="sub_text" />
+        <column name="html_content"    var="html_content" />
+        <column name="html_position"   var="html_position" />
+        <column name="html_bg_color"   var="html_bg_color" />
+        <column name="click_url"       var="click_url" />
+        <column name="click_target"    var="click_target" />
+        <column name="footer_text"     var="footer_text" />
+        <column name="footer_bg_color" var="footer_bg_color" />
+        <column name="footer_text_color" var="footer_text_color" />
+        <column name="start_date"      var="start_date" />
+        <column name="end_date"        var="end_date" />
+        <column name="is_active"       var="is_active" />
+        <column name="regdate"         var="regdate" />
+    </columns>
+</query>

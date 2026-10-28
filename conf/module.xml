@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <actions>
+        <action name="dispTriplepopupAdminIndex"      type="view"       admin_auth="manager" admin_index="true" />
+        <action name="procTriplepopupAdminSaveConfig" type="controller" admin_auth="manager" />
+        <action name="procTriplepopupAdminSaveModules" type="controller" admin_auth="manager" />
+        <action name="procTriplepopupAdminSaveOrder"  type="controller" admin_auth="manager" check_csrf="false" />
+        <action name="procTriplepopupAdminSaveItem"   type="controller" admin_auth="manager" />
+        <action name="procTriplepopupAdminDeleteItem" type="controller" admin_auth="manager" />
+        <action name="getTriplepopupData"             type="view"       check_csrf="false" />
+    </actions>
+</module>

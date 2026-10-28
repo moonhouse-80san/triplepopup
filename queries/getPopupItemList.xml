@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<query id="getPopupItemList" action="select">
+    <tables><table name="triplepopup_slots" /></tables>
+    <columns><column name="*" /></columns>
+    <conditions>
+        <condition operation="equal" column="is_active" var="is_active" filter="enum:Y,N" notnull="notnull" />
+    </conditions>
+    <navigation>
+        <orderby default="asc"><column name="slot_number" /></orderby>
+    </navigation>
+</query>

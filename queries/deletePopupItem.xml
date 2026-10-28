@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<query id="deletePopupItem" action="delete">
+    <tables><table name="triplepopup_slots" /></tables>
+    <conditions>
+        <condition operation="equal" column="slot_number" var="slot_number" filter="number" notnull="notnull" />
+    </conditions>
+</query>

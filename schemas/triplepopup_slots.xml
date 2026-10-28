@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<table name="triplepopup_slots">
+    <column name="slot_number"     type="tinyint"  notnull="notnull" primarykey="primarykey" />
+    <column name="badge_text"      type="varchar"  size="100" />
+    <column name="badge_bg_color"  type="varchar"  size="20"  default="#0071e3" />
+    <column name="badge_text_color" type="varchar"  size="20"  default="#ffffff" />
+    <column name="body_image"      type="varchar"  size="500" />
+    <column name="body_images"     type="text" />
+    <column name="title_text"      type="varchar"  size="200" />
+    <column name="sub_text"        type="varchar"  size="300" />
+    <column name="html_content"    type="text" />
+    <column name="html_position"   type="varchar"  size="10"  default="top" />
+    <column name="html_bg_color"   type="varchar"  size="20"  default="#ffffff" />
+    <column name="click_url"       type="varchar"  size="500" />
+    <column name="click_target"    type="varchar"  size="10"  default="blank" />
+    <column name="footer_text"     type="varchar"  size="200" />
+    <column name="footer_bg_color" type="varchar"  size="20"  default="#0071e3" />
+    <column name="footer_text_color" type="varchar"  size="20"  default="#ffffff" />
+    <column name="start_date"      type="varchar"  size="8" />
+    <column name="end_date"        type="varchar"  size="8" />
+    <column name="is_active"       type="char"     size="1"   default="Y" />
+    <column name="regdate"         type="varchar"  size="14" />
+</table>
