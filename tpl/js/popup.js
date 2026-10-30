@@ -215,9 +215,10 @@
         card.style.minWidth = w + 'px';
 
         // 본문 배경색 (기본 #ffffff)
-        var htmlBg = item.html_bg_color || '#ffffff';
-        if (htmlBg && htmlBg.toLowerCase() !== '#ffffff') {
-            card.style.background = htmlBg;
+        var htmlBg    = item.html_bg_color || '#ffffff';
+        var htmlTrans = Math.max(0, Math.min(100, parseInt(item.html_bg_trans, 10) || 0));
+        if (htmlBg.toLowerCase() !== '#ffffff' || htmlTrans > 0) {
+            card.style.background = toRgba(htmlBg, htmlTrans);
         }
 
         var hasImage = !!(item.body_image);
@@ -279,14 +280,13 @@
                     if (typeof onImgLoad === 'function') htmlImgs[k].addEventListener('load', onImgLoad);
                 }
                 if (item.html_position === 'overlay') {
-                    htmlBox.className = 'triplepopup-pop-html triplepopup-pop-html-overlay';
+                    htmlBox.className = 'triplepopup-pop-html triplepopup-pop-html-overlay' + (item.html_raw === 'Y' ? ' triplepopup-pop-html-raw' : '');
                     htmlBox.addEventListener('click', function (e) {
                         if (e.target.closest && e.target.closest('a, button')) e.stopPropagation();
                     });
                     media.appendChild(htmlBox);
                 } else {
-                    htmlBox.className = 'triplepopup-pop-html triplepopup-pop-html-top';
-                    if (htmlBg) htmlBox.style.background = htmlBg;
+                    htmlBox.className = 'triplepopup-pop-html triplepopup-pop-html-top' + (item.html_raw === 'Y' ? ' triplepopup-pop-html-raw' : '');
                     card.appendChild(htmlBox);
                 }
             }
@@ -328,7 +328,7 @@
                 var htmlBox2 = document.createElement('div');
                 htmlBox2.className = 'triplepopup-pop-html triplepopup-pop-html-top triplepopup-pop-html-text';
                 htmlBox2.innerHTML = item.html_content;
-                if (htmlBg) htmlBox2.style.background = htmlBg;
+                if (item.html_raw === 'Y') htmlBox2.classList.add('triplepopup-pop-html-raw');
                 var htmlImgs2 = htmlBox2.getElementsByTagName('img');
                 for (var j = 0; j < htmlImgs2.length; j++) {
                     if (typeof onImgLoad === 'function') htmlImgs2[j].addEventListener('load', onImgLoad);
@@ -359,6 +359,14 @@
         }
 
         return card;
+    }
+
+    // #rgb / #rrggbb + 투명도(%) → rgba() 문자열 (투명도 0 = 불투명)
+    function toRgba(hex, trans) {
+        var h = String(hex || '').replace('#', '');
+        if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+        if (!/^[0-9a-fA-F]{6}$/.test(h)) return '#ffffff';
+        return 'rgba(' + parseInt(h.substr(0, 2), 16) + ',' + parseInt(h.substr(2, 2), 16) + ',' + parseInt(h.substr(4, 2), 16) + ',' + (1 - trans / 100) + ')';
     }
 
     function isSafeUrl(url) {

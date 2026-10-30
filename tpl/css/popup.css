@@ -28,14 +28,15 @@
 }
 
 /* 테마 스타일 무력화 리셋 */
+/* 게시글 가져오기(.triplepopup-pop-html-raw) 안쪽은 리셋에서 제외 → 게시판과 같은 스타일 유지 */
 #triplepopup-pop-root,
-#triplepopup-pop-root *,
-#triplepopup-pop-root *::before,
-#triplepopup-pop-root *::after { box-sizing: border-box; }
-#triplepopup-pop-root div,
-#triplepopup-pop-root span,
-#triplepopup-pop-root button,
-#triplepopup-pop-root img {
+#triplepopup-pop-root *:not(:where(.triplepopup-pop-html-raw *)),
+#triplepopup-pop-root *:not(:where(.triplepopup-pop-html-raw *))::before,
+#triplepopup-pop-root *:not(:where(.triplepopup-pop-html-raw *))::after { box-sizing: border-box; }
+#triplepopup-pop-root div:not(:where(.triplepopup-pop-html-raw *)),
+#triplepopup-pop-root span:not(:where(.triplepopup-pop-html-raw *)),
+#triplepopup-pop-root button:not(:where(.triplepopup-pop-html-raw *)),
+#triplepopup-pop-root img:not(:where(.triplepopup-pop-html-raw *)) {
     margin: 0;
     padding: 0;
     border: 0;
@@ -44,7 +45,7 @@
     text-shadow: none;
     text-transform: none;
 }
-#triplepopup-pop-root img { display: block; max-width: none; }
+#triplepopup-pop-root img:not(:where(.triplepopup-pop-html-raw *)) { display: block; max-width: none; }
 
 @keyframes triplepopup-pop-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes triplepopup-pop-rise {
@@ -147,7 +148,7 @@
     z-index: 2;
     display: inline-block;
     max-width: calc(100% - 32px);
-    padding: 0.38em 0.9em;
+    padding: 0.55em 1.2em;
     border-radius: 980px;
     font-size: 12px;
     font-weight: 600;
@@ -245,11 +246,24 @@
 #triplepopup-pop-root .triplepopup-pop-html-top { flex: 0 0 auto; width: 100%; padding: 12px 16px; }
 #triplepopup-pop-root .triplepopup-pop-html-text { padding: 14px 20px 18px; font-size: 16px; }
 #triplepopup-pop-root .triplepopup-pop-html-text.triplepopup-pop-clickable { cursor: pointer; }
+/* 긴 글(게시글 가져오기 포함)은 최대 높이를 넘으면 영역 안에서 스크롤 */
+#triplepopup-pop-root .triplepopup-pop-html-top,
+#triplepopup-pop-root .triplepopup-pop-html-text {
+    max-height: 70vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
 /* 머리말·타이틀 바로 아래 본문: 상단 여백을 더 줄여 간격 최소화 */
 #triplepopup-pop-root .triplepopup-pop-badge-bar + .triplepopup-pop-html-text,
 #triplepopup-pop-root .triplepopup-pop-badge-bar + .triplepopup-pop-texthead,
 #triplepopup-pop-root .triplepopup-pop-texthead + .triplepopup-pop-html-text {
-    padding-top: 10px;
+    padding-top: 16px;
+}
+/* 이미지 위 겹침 HTML: 머리말(배지)이 있으면 그 아래부터 내용이 시작되도록 상단 여백 확보 */
+#triplepopup-pop-root .triplepopup-pop-badge ~ .triplepopup-pop-html-overlay {
+    padding-top: 66px;
 }
 #triplepopup-pop-root .triplepopup-pop-html-overlay {
     position: absolute;
@@ -261,9 +275,24 @@
 #triplepopup-pop-root .triplepopup-pop-html-overlay a,
 #triplepopup-pop-root .triplepopup-pop-html-overlay button { pointer-events: auto; }
 #triplepopup-pop-root .triplepopup-pop-html img { display: inline-block; max-width: 100%; height: auto; }
-#triplepopup-pop-root .triplepopup-pop-html p { margin: 0 0 0.6em; }
-#triplepopup-pop-root .triplepopup-pop-html p:last-child { margin-bottom: 0; }
-#triplepopup-pop-root .triplepopup-pop-html a { color: #0071e3; }
+#triplepopup-pop-root .triplepopup-pop-html:not(.triplepopup-pop-html-raw) p { margin: 0 0 0.6em; }
+#triplepopup-pop-root .triplepopup-pop-html:not(.triplepopup-pop-html-raw) p:last-child { margin-bottom: 0; }
+#triplepopup-pop-root .triplepopup-pop-html:not(.triplepopup-pop-html-raw) a { color: #0071e3; }
+/* 게시글 가져오기: 팝업 기본 글꼴·여백을 끄고 게시판 원문 스타일 그대로 표시 */
+#triplepopup-pop-root .triplepopup-pop-html.triplepopup-pop-html-raw {
+    padding: 0;
+    font-size: revert;
+    line-height: revert;
+    letter-spacing: revert;
+    color: revert;
+    word-break: revert;
+    overflow-wrap: revert;
+    isolation: isolate; /* z-index:-1 그림자 등이 팝업 흰 배경 뒤로 숨지 않게 */
+}
+/* 좁은 화면에서는 고정 폭(예: 400px) 상자가 카드 밖으로 잘리지 않게 맞춤 */
+@media (max-width: 480px) {
+    #triplepopup-pop-root .triplepopup-pop-html-raw div { max-width: 100%; box-sizing: border-box; }
+}
 
 /* 하단 CTA 버튼 */
 #triplepopup-pop-root .triplepopup-pop-footer {

@@ -61,6 +61,12 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_color')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'source_document_srl')) {
+            return true;
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
+            return true;
+        }
         if (!$this->_isTriggerRegistered()) {
             return true;
         }
@@ -105,6 +111,12 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_color')) {
             $oDB->addColumn('triplepopup_slots', 'html_bg_color', 'varchar', 20, '#ffffff');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'source_document_srl')) {
+            $oDB->addColumn('triplepopup_slots', 'source_document_srl', 'bigint', 11);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
+            $oDB->addColumn('triplepopup_slots', 'html_bg_trans', 'tinyint', 3, 0);
         }
         if (!$this->_isTriggerRegistered()) {
             $this->_registerTrigger();
@@ -162,6 +174,12 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_color')) {
             $oDB->addColumn('triplepopup_slots', 'html_bg_color', 'varchar', 20, '#ffffff');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'source_document_srl')) {
+            $oDB->addColumn('triplepopup_slots', 'source_document_srl', 'bigint', 11);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
+            $oDB->addColumn('triplepopup_slots', 'html_bg_trans', 'tinyint', 3, 0);
         }
     }
 

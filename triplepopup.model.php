@@ -124,6 +124,26 @@ class triplepopupModel extends triplepopup
             foreach ($this->getLangFields() as $f) {
                 if (isset($item->{$f})) $item->{$f} = $this->resolveLangText($item->{$f});
             }
+            // 게시글 가져오기: 연결된 글이 공개 상태이고 현재 방문자가 열람 가능하면 글 내용으로 본문을 대체 (실시간 반영)
+            if (!empty($item->source_document_srl)) {
+                $oDocument = \DocumentModel::getDocument((int)$item->source_document_srl, false, false);
+                if ($oDocument->isExists() && $oDocument->get('status') === \DocumentModel::getConfigStatus('public') && $oDocument->isAccessible(true)) {
+                    // 게시판 화면과 같은 래퍼(rhymix_content xe_content)를 유지해 사이트 CSS 가 그대로 적용되게 한다
+                    $raw = $oDocument->getContent(false, true, false, true);
+                    // 본문 안의 <style> 은 HTMLFilter 가 글자로 바꿔 버리므로 먼저 떼어 내고, 위험한 구문만 제거한 뒤 앞에 붙인다
+                    $css = '';
+                    if (preg_match_all('#<style\b[^>]*>(.*?)</style>#is', $raw, $m)) {
+                        $css = '<style>' . preg_replace('#@import[^;]*;?|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding#i', '', implode("\n", $m[1])) . '</style>';
+                        $raw = preg_replace(array('#<style\b[^>]*>.*?</style>#is', '#<p[^>]*>\s*</p>#i'), '', $raw);
+                    }
+                    $item->html_content = $css . \Rhymix\Framework\Filters\HTMLFilter::clean($raw, true, true);
+                    $item->html_raw     = 'Y'; // 팝업 기본 글꼴·여백 스타일을 끄고 원문 스타일 그대로 표시
+                }
+            }
+            // 에디터 컴포넌트(<img editor_component=...>)를 실제 출력 HTML 로 변환
+            if (!empty($item->html_content)) {
+                $item->html_content = getController('editor')->transComponent($item->html_content);
+            }
             $filtered[$item->slot_number] = $item;
         }
 
@@ -190,6 +210,8 @@ class triplepopupModel extends triplepopup
                 $slot->html_content    = '';
                 $slot->html_position   = 'top';
                 $slot->html_bg_color   = '#ffffff';
+                $slot->html_bg_trans   = 0;
+                $slot->source_document_srl = '';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
                 $slot->footer_text     = '';
@@ -211,6 +233,11 @@ class triplepopupModel extends triplepopup
             if (!isset($slot->html_content)) $slot->html_content = '';
             if (!isset($slot->html_position) || $slot->html_position !== 'overlay') $slot->html_position = 'top';
             if (!isset($slot->html_bg_color) || $slot->html_bg_color === '') $slot->html_bg_color = '#ffffff';
+            $slot->html_bg_trans = isset($slot->html_bg_trans) ? max(0, min(100, (int)$slot->html_bg_trans)) : 0;
+
+            // 게시글 가져오기: 연결된 글 번호·제목 (관리자 표시용)
+            if (empty($slot->source_document_srl)) $slot->source_document_srl = '';
+            $slot->source_document_title = $slot->source_document_srl ? \DocumentModel::getDocument((int)$slot->source_document_srl, false, false)->getTitleText() : '';
 
             // 언어별 이미지 목록 (관리자 탭용)
             $lang_images = $this->decodeLangImages(isset($slot->body_images) ? $slot->body_images : '');

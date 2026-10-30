@@ -165,9 +165,12 @@
             setPreviewHtml(card.querySelector('.triplepopup-pv-html-overlay'), htmlOv ? htmlVal : '');
 
             // 본문 배경색: 카드 전체에 적용 (이미지가 있어도 텍스트 영역 배경으로 사용)
-            card.style.background = htmlBg;
-            var elHtmlTop = card.querySelector('.triplepopup-pv-html-top');
-            if (elHtmlTop) elHtmlTop.style.background = htmlBg;
+            var htmlTrans = Math.max(0, Math.min(100, parseInt(fieldVal(form, 'html_bg_trans'), 10) || 0));
+            var hx = htmlBg.replace('#', '');
+            if (hx.length === 3) hx = hx.charAt(0) + hx.charAt(0) + hx.charAt(1) + hx.charAt(1) + hx.charAt(2) + hx.charAt(2);
+            card.style.background = /^[0-9a-fA-F]{6}$/.test(hx)
+                ? 'rgba(' + parseInt(hx.substr(0, 2), 16) + ',' + parseInt(hx.substr(2, 2), 16) + ',' + parseInt(hx.substr(4, 2), 16) + ',' + (1 - htmlTrans / 100) + ')'
+                : '#ffffff';
 
             // 이미지·머리말·타이틀 없이 글만 있으면 실제 팝업처럼 이미지 영역 없이 텍스트 카드로 표시
             var pvImg  = card.querySelector('.triplepopup-pv-img');
@@ -247,102 +250,36 @@
             })(pvForms[p]);
         }
 
-        /* ---------- 텍스트 본문 에디터 (서식 도구 + 소스 보기) ---------- */
-        function bindEditor(box) {
-            var area = box.querySelector('.triplepopup-editor-area');
-            var src  = box.querySelector('textarea');
-            var bar  = box.querySelector('.triplepopup-editor-bar');
-            if (!area || !src || !bar) return;
-            var saved = null; // 도구 버튼을 눌러도 글자 선택이 유지되도록 마지막 선택 범위를 보관
-
-            function sync() {
-                var empty = !area.textContent.trim() && !area.querySelector('img, hr, table');
-                src.value = empty ? '' : area.innerHTML;
-                src.dispatchEvent(new Event('input', { bubbles: true })); // 미리보기 갱신
-            }
-            function saveRange() {
-                var sel = window.getSelection();
-                if (sel && sel.rangeCount && area.contains(sel.anchorNode)) saved = sel.getRangeAt(0).cloneRange();
-            }
-            function run(cmd, val) {
-                area.focus();
-                if (saved) {
-                    var sel = window.getSelection();
-                    sel.removeAllRanges();
-                    sel.addRange(saved);
+        /* ---------- 텍스트 본문 에디터 (라이믹스 에디터 모듈 — 에디터 컴포넌트 지원) ---------- */
+        // 에디터 내용이 바뀌면 숨겨진 html_content 값을 갱신하고 미리보기에 알린다
+        function hookEditors() {
+            CKEDITOR.on('instanceReady', function (evt) {
+                var seq = evt.editor.config.xe_editor_sequence;
+                var rel = window.editorRelKeys && window.editorRelKeys[seq];
+                var ta  = rel && rel.content;
+                if (!ta) return;
+                function fire() {
+                    ta.value = evt.editor.getData();
+                    ta.dispatchEvent(new Event('input', { bubbles: true }));
                 }
-                try { document.execCommand('styleWithCSS', false, cmd === 'foreColor' || cmd === 'fontSize'); } catch (e) {}
-                document.execCommand(cmd, false, val);
-                saveRange();
-                sync();
-            }
-
-            area.innerHTML = src.value ? cleanPreviewHtml(src.value) : '';
-            area.addEventListener('focus', function () {
-                try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
-            });
-            area.addEventListener('input', sync);
-            area.addEventListener('keyup', saveRange);
-            area.addEventListener('mouseup', saveRange);
-            area.addEventListener('paste', function (e) {
-                e.preventDefault();
-                var cd   = e.clipboardData || window.clipboardData;
-                var text = cd ? cd.getData('text/plain') : '';
-                if (text) document.execCommand('insertText', false, text);
-            });
-
-            // 버튼 클릭 시 에디터의 글자 선택이 풀리지 않게 (선택 상자·색상 입력은 제외)
-            bar.addEventListener('mousedown', function (e) {
-                if (!e.target.closest('select, input')) e.preventDefault();
-            });
-            bar.addEventListener('click', function (e) {
-                var btn = e.target.closest('button[data-cmd]');
-                if (!btn) return;
-                var cmd = btn.getAttribute('data-cmd');
-                var val = btn.getAttribute('data-val') || null;
-                if (cmd === 'source') {
-                    var on = box.classList.toggle('triplepopup-is-source');
-                    btn.classList.toggle('triplepopup-is-active', on);
-                    if (on) { src.focus(); }
-                    else { area.innerHTML = src.value ? cleanPreviewHtml(src.value) : ''; saved = null; }
-                    return;
-                }
-                if (box.classList.contains('triplepopup-is-source')) return; // 소스 편집 중에는 서식 도구 비활성
-                if (cmd === 'createLink') {
-                    var url = window.prompt('링크 주소를 입력하세요', 'https://');
-                    if (!url) return;
-                    url = url.trim();
-                    if (!/^(https?:\/\/|mailto:|tel:|\/(?!\/))/i.test(url)) {
-                        window.alert('http(s)://, mailto:, tel: 또는 /로 시작하는 주소만 사용할 수 있습니다.');
-                        return;
-                    }
-                    run('createLink', url);
-                    return;
-                }
-                // 글자색 프리셋 칩 등 data-val 이 있는 명령
-                if (val) {
-                    run(cmd, val);
-                    return;
-                }
-                run(cmd);
-            });
-            bar.addEventListener('change', function (e) {
-                var el = e.target;
-                if (el.tagName === 'SELECT' && el.value && !box.classList.contains('triplepopup-is-source')) {
-                    run(el.getAttribute('data-cmd'), el.value);
-                }
-                if (el.tagName === 'SELECT') el.value = '';
-            });
-            bar.addEventListener('input', function (e) {
-                var el = e.target;
-                if (el.type === 'color' && el.getAttribute('data-cmd') && !box.classList.contains('triplepopup-is-source')) {
-                    run(el.getAttribute('data-cmd'), el.value);
-                }
+                evt.editor.on('change', fire);
+                evt.editor.on('mode', fire);
             });
         }
+        (function waitCke(tries) {
+            if (window.CKEDITOR && CKEDITOR.on) { hookEditors(); return; }
+            if (tries > 50) return;
+            setTimeout(function () { waitCke(tries + 1); }, 100);
+        })(0);
 
-        var editorBoxes = root.querySelectorAll('.triplepopup-editor');
-        for (var eb = 0; eb < editorBoxes.length; eb++) bindEditor(editorBoxes[eb]);
+        // 저장 직전에 에디터 내용을 한 번 더 폼 필드에 반영 (소스 편집 직후 저장 등)
+        root.addEventListener('submit', function (e) {
+            var rel = window.editorRelKeys || {};
+            for (var k in rel) {
+                if (!rel[k] || !rel[k].content || !e.target.contains(rel[k].content)) continue;
+                try { rel[k].content.value = rel[k].func(k); } catch (err) {}
+            }
+        }, true);
 
         /* ---------- 언어별 이미지 탭 ---------- */
         function setPreviewImage(form, src) {

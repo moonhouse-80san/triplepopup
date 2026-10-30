@@ -12,6 +12,8 @@
         <column name="html_content"    var="html_content"    force="force" />
         <column name="html_position"   var="html_position" />
         <column name="html_bg_color"   var="html_bg_color" />
+        <column name="html_bg_trans"   var="html_bg_trans"   force="force" />
+        <column name="source_document_srl" var="source_document_srl" force="force" />
         <column name="click_url"       var="click_url"       force="force" />
         <column name="click_target"    var="click_target" />
         <column name="footer_text"     var="footer_text"     force="force" />

@@ -244,10 +244,25 @@ class triplepopupAdminController extends triplepopup
         }
 
         // 이미지 위 HTML: 업로드 처리 전에 검증하여 실패 시 고아 파일이 남지 않게 한다.
-        // HTMLFilter 로 script · 이벤트 속성 · javascript: 링크 등 XSS 요소를 제거한 값만 저장 (class 는 허용, 에디터 컴포넌트는 제외)
-        $htmlContent = \Rhymix\Framework\Filters\HTMLFilter::clean(trim((string)Context::get('html_content')), true, false);
+        // HTMLFilter 로 script · 이벤트 속성 · javascript: 링크 등 XSS 요소를 제거한 값만 저장 (class 와 에디터 컴포넌트는 허용)
+        $htmlContent = \Rhymix\Framework\Filters\HTMLFilter::clean(trim((string)Context::get('html_content')), true, true);
         if (strlen($htmlContent) > 20000) {
             return $this->setError(-1, '이미지 위 HTML 은 20,000바이트 이하로 입력해 주세요.');
+        }
+
+        // 게시글 가져오기: 글 주소(또는 글 번호)에서 document_srl 을 추출하고 공개글인지 검증 (업로드 전에 검증)
+        $sourceInput = trim((string)Context::get('source_document'));
+        $sourceSrl   = 0;
+        if ($sourceInput !== '') {
+            if (ctype_digit($sourceInput)) {
+                $sourceSrl = (int)$sourceInput;
+            } elseif (preg_match('/document_srl=(\d+)|\/(\d+)\/?(?:[?#]|$)/', $sourceInput, $m)) {
+                $sourceSrl = (int)(($m[1] ?? '') ?: ($m[2] ?? 0));
+            }
+            $oDocument = \DocumentModel::getDocument($sourceSrl, false, false);
+            if (!$oDocument->isExists() || $oDocument->get('status') !== \DocumentModel::getConfigStatus('public')) {
+                return $this->setError(-1, '가져올 게시글을 찾을 수 없거나 공개글이 아닙니다. 글 주소 또는 글 번호를 확인해 주세요.');
+            }
         }
 
         $oModel   = getModel('triplepopup');
@@ -289,6 +304,8 @@ class triplepopupAdminController extends triplepopup
         $args->html_content    = $htmlContent;
         $args->html_position   = (Context::get('html_position') === 'overlay') ? 'overlay' : 'top';
         $args->html_bg_color   = $this->_normalizeColor(Context::get('html_bg_color'), '#ffffff');
+        $args->html_bg_trans   = max(0, min(100, (int)Context::get('html_bg_trans')));
+        $args->source_document_srl = $sourceSrl;
         $args->click_url       = $this->_normalizeUrl(Context::get('click_url'));
         $args->click_target    = (Context::get('click_target') === 'self') ? 'self' : 'blank';
         $args->footer_text     = $this->_normalizeLangText(Context::get('footer_text'));

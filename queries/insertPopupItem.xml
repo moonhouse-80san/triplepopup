@@ -13,6 +13,8 @@
         <column name="html_content"    var="html_content" />
         <column name="html_position"   var="html_position" />
         <column name="html_bg_color"   var="html_bg_color" />
+        <column name="html_bg_trans"   var="html_bg_trans" />
+        <column name="source_document_srl" var="source_document_srl" />
         <column name="click_url"       var="click_url" />
         <column name="click_target"    var="click_target" />
         <column name="footer_text"     var="footer_text" />

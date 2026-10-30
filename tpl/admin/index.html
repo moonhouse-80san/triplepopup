@@ -219,48 +219,21 @@
                                 </div>
 
                                 <div class="triplepopup-field triplepopup-field-full">
-                                    <label>텍스트 본문 (에디터) <span class="triplepopup-label-hint">이미지 없이 글만 넣어도 됩니다 · 비우면 표시 안 됨</span></label>
-                                    <div class="triplepopup-editor">
-                                        <div class="triplepopup-editor-bar" role="toolbar" aria-label="텍스트 서식">
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="bold" title="굵게"><b>B</b></button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="italic" title="기울임"><i>I</i></button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="underline" title="밑줄"><u>U</u></button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="strikeThrough" title="취소선"><s>S</s></button>
-                                            <span class="triplepopup-editor-sep"></span>
-                                            <select class="triplepopup-editor-size" data-cmd="fontSize" title="글자 크기">
-                                                <option value="">크기</option>
-                                                <option value="2">작게</option>
-                                                <option value="3">보통</option>
-                                                <option value="5">크게</option>
-                                                <option value="6">아주 크게</option>
-                                            </select>
-                                            <span class="triplepopup-editor-colors" title="글자색">
-                                                <button type="button" class="triplepopup-editor-chip" data-cmd="foreColor" data-val="#1d1d1f" title="검정" aria-label="검정" style="--chip:#1d1d1f"></button>
-                                                <button type="button" class="triplepopup-editor-chip" data-cmd="foreColor" data-val="#6e6e73" title="회색" aria-label="회색" style="--chip:#6e6e73"></button>
-                                                <button type="button" class="triplepopup-editor-chip" data-cmd="foreColor" data-val="#D70015" title="빨강" aria-label="빨강" style="--chip:#D70015"></button>
-                                                <button type="button" class="triplepopup-editor-chip" data-cmd="foreColor" data-val="#B25E00" title="갈색" aria-label="갈색" style="--chip:#B25E00"></button>
-                                                <button type="button" class="triplepopup-editor-chip" data-cmd="foreColor" data-val="#0071E3" title="파랑" aria-label="파랑" style="--chip:#0071E3"></button>
-                                                <button type="button" class="triplepopup-editor-chip" data-cmd="foreColor" data-val="#248A3D" title="초록" aria-label="초록" style="--chip:#248A3D"></button>
-                                                <button type="button" class="triplepopup-editor-chip triplepopup-editor-chip-white" data-cmd="foreColor" data-val="#FFFFFF" title="흰색" aria-label="흰색" style="--chip:#FFFFFF"></button>
-                                            </span>
-                                            <label class="triplepopup-editor-color" title="글자색 직접 선택"><span>A</span><input type="color" data-cmd="foreColor" value="#1d1d1f" /></label>
-                                            <span class="triplepopup-editor-sep"></span>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="justifyLeft" title="왼쪽 정렬">좌</button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="justifyCenter" title="가운데 정렬">중</button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="justifyRight" title="오른쪽 정렬">우</button>
-                                            <span class="triplepopup-editor-sep"></span>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="insertUnorderedList" title="글머리 목록">• 목록</button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="insertOrderedList" title="번호 목록">1. 목록</button>
-                                            <span class="triplepopup-editor-sep"></span>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="createLink" title="선택한 글자에 링크">링크</button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="unlink" title="링크 해제">링크 해제</button>
-                                            <button type="button" class="triplepopup-editor-btn" data-cmd="removeFormat" title="서식 지우기">서식 지움</button>
-                                            <button type="button" class="triplepopup-editor-btn triplepopup-editor-srcbtn" data-cmd="source" title="HTML 소스 보기/편집">소스</button>
-                                        </div>
-                                        <div class="triplepopup-editor-area" contenteditable="true" spellcheck="false" data-placeholder="여기에 글을 입력하세요"></div>
-                                        <textarea name="html_content" class="triplepopup-textarea triplepopup-textarea-code" rows="8" spellcheck="false">{escape($slot->html_content)}</textarea>
+                                    <label>게시글 가져오기 <span class="triplepopup-label-hint">게시글 주소 또는 글 번호 · 비우면 사용 안 함</span></label>
+                                    <div class="triplepopup-inputwrap triplepopup-inputwrap-plain">
+                                        <input type="text" name="source_document" value="{$slot->source_document_srl}" class="triplepopup-input-flush" placeholder="https://moonhouse.co.kr/list/433000 또는 433000" />
                                     </div>
-                                    <p class="triplepopup-hint">붙여넣기는 서식 없이 글자만 들어갑니다. 세부 스타일은 <b>소스</b>에서 HTML로 직접 작성하세요. 저장 시 <b>script · 이벤트 속성(onclick 등) · javascript: 링크</b>는 자동으로 제거됩니다.</p>
+                                    <!--@if($slot->source_document_title)-->
+                                    <p class="triplepopup-hint">현재 연결된 글: <b>{escape($slot->source_document_title)}</b></p>
+                                    <!--@end-->
+                                    <p class="triplepopup-hint">입력하면 아래 텍스트 본문 대신 <b>해당 게시글의 내용</b>이 팝업에 표시되며, 글을 수정하면 팝업에도 바로 반영됩니다. 비밀글·비공개 글은 연결할 수 없고, 열람 권한이 없는 방문자에게는 표시되지 않습니다.</p>
+                                </div>
+
+                                <div class="triplepopup-field triplepopup-field-full">
+                                    <label>텍스트 본문 (에디터) <span class="triplepopup-label-hint">이미지 없이 글만 넣어도 됩니다 · 비우면 표시 안 됨</span></label>
+                                    <textarea name="html_content" class="triplepopup-textarea" style="display:none" hidden="hidden">{escape($slot->html_content)}</textarea>
+                                    {$slot->editor_html|noescape}
+                                    <p class="triplepopup-hint">도구 상자 오른쪽 끝의 <b>화살표</b>로 펼치면 전체 도구와 <b>에디터 컴포넌트</b>를 사용할 수 있습니다. 세부 스타일은 <b>소스</b> 버튼으로 HTML을 직접 작성하세요. 저장 시 <b>script · 이벤트 속성(onclick 등) · javascript: 링크</b>는 자동으로 제거됩니다.</p>
                                 </div>
 
                                 <div class="triplepopup-field">
@@ -277,6 +250,11 @@
                                         <span class="triplepopup-swatch-cap">배경</span>
                                         <span class="triplepopup-swatch"><input type="color" name="html_bg_color" value="{$slot->html_bg_color}" title="본문 배경색" /></span>
                                     </div>
+                                    <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix">
+                                        <span class="triplepopup-swatch-cap">투명도</span>
+                                        <input type="number" name="html_bg_trans" value="{$slot->html_bg_trans}" min="0" max="100" step="5" class="triplepopup-input-flush" title="본문 배경 투명도" />
+                                        <span class="triplepopup-suffix">%</span>
+                                    </div>
                                     <div class="triplepopup-presets" data-target="html_bg_color">
                                         <span class="triplepopup-presets-label">배경</span>
                                         <button type="button" class="triplepopup-chip triplepopup-chip-white" data-color="#FFFFFF" title="흰색" aria-label="흰색" style="--chip:#FFFFFF"></button>
@@ -287,7 +265,7 @@
                                         <button type="button" class="triplepopup-chip" data-color="#FCE4EC" title="연분홍" aria-label="연분홍" style="--chip:#FCE4EC"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#1d1d1f" title="검정" aria-label="검정" style="--chip:#1d1d1f"></button>
                                     </div>
-                                    <p class="triplepopup-hint">텍스트 본문(HTML) 영역의 배경색입니다. 기본은 흰색입니다.</p>
+                                    <p class="triplepopup-hint">텍스트 본문(HTML) 영역의 배경색입니다. 기본은 흰색입니다. 투명도는 <b>0 = 불투명, 100 = 완전 투명</b>입니다.</p>
                                 </div>
 
                                 <div class="triplepopup-field triplepopup-field-full">

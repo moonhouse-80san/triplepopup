@@ -20,7 +20,23 @@ class triplepopupAdminView extends triplepopup
         $this->ensureSchema();
         $oModel = getModel('triplepopup');
         Context::set('config', $oModel->getPopupConfig());
-        Context::set('slots',  $oModel->getSlotList());
+        $slots = $oModel->getSlotList();
+        // 슬롯별 라이믹스 에디터 (에디터 컴포넌트 포함) — 입력값은 폼의 html_content 필드와 자동 동기화됨
+        $oEditorModel = getModel('editor');
+        foreach ($slots as $slot) {
+            $option = new stdClass();
+            $option->editor_skin = 'ckeditor';
+            $option->height = 200;
+            $option->primary_key_name = 'slot_number';
+            $option->content_key_name = 'html_content';
+            $option->allow_fileupload = false;
+            $option->enable_autosave = false;
+            $option->enable_component = true;
+            $option->enable_default_component = true;
+            $option->editor_toolbar_hide = true; // 도구 상자는 처음에 접힌 상태
+            $slot->editor_html = $oEditorModel->getEditor(0, $option);
+        }
+        Context::set('slots', $slots);
         Context::set('modules', $oModel->getTargetModuleList());
 
         // 하단 '모듈 정보' 카드용 — conf/info.xml 에서 읽어옴
