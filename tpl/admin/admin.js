@@ -166,6 +166,8 @@
 
             // 본문 배경색: 카드 전체에 적용 (이미지가 있어도 텍스트 영역 배경으로 사용)
             var htmlTrans = Math.max(0, Math.min(100, parseInt(fieldVal(form, 'html_bg_trans'), 10) || 0));
+            var transOut  = form.querySelector('.triplepopup-range-out');
+            if (transOut) transOut.textContent = htmlTrans + '%';
             var hx = htmlBg.replace('#', '');
             if (hx.length === 3) hx = hx.charAt(0) + hx.charAt(0) + hx.charAt(1) + hx.charAt(1) + hx.charAt(2) + hx.charAt(2);
             card.style.background = /^[0-9a-fA-F]{6}$/.test(hx)

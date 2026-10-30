@@ -353,6 +353,20 @@
     margin: 0;
 }
 
+/* 투명도 슬라이더 */
+.triplepopup-admin input[type="range"].triplepopup-range {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: auto;
+    margin: 0 var(--tpop-pad-ctl);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    accent-color: var(--tpop-accent);
+    cursor: pointer;
+}
+.triplepopup-admin .triplepopup-range-out { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; }
+
 /* 노출 기간 */
 .triplepopup-admin .triplepopup-daterange-wrap {
     display: inline-flex;

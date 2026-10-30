@@ -252,8 +252,8 @@
                                     </div>
                                     <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix">
                                         <span class="triplepopup-swatch-cap">투명도</span>
-                                        <input type="number" name="html_bg_trans" value="{$slot->html_bg_trans}" min="0" max="100" step="5" class="triplepopup-input-flush" title="본문 배경 투명도" />
-                                        <span class="triplepopup-suffix">%</span>
+                                        <input type="range" name="html_bg_trans" value="{$slot->html_bg_trans}" min="0" max="100" step="5" class="triplepopup-range" title="본문 배경 투명도" />
+                                        <span class="triplepopup-suffix triplepopup-range-out">{$slot->html_bg_trans}%</span>
                                     </div>
                                     <div class="triplepopup-presets" data-target="html_bg_color">
                                         <span class="triplepopup-presets-label">배경</span>
@@ -289,16 +289,6 @@
                                 </div>
 
                                 <div class="triplepopup-field triplepopup-field-full">
-                                    <label>노출 기간</label>
-                                    <div class="triplepopup-inputwrap triplepopup-daterange-wrap">
-                                        <input type="date" name="start_date" value="{$slot->start_date_input}" class="triplepopup-date-flush" />
-                                        <span class="triplepopup-tilde">~</span>
-                                        <input type="date" name="end_date" value="{$slot->end_date_input}" class="triplepopup-date-flush" />
-                                    </div>
-                                    <p class="triplepopup-hint">비워두면 상시 노출됩니다. <b>종료일이 지나면 해당 배너는 자동으로 노출되지 않습니다.</b></p>
-                                </div>
-
-                                <div class="triplepopup-field triplepopup-field-full">
                                     <label>본문 이미지</label>
                                     <div class="triplepopup-upload">
                                         <!--@if($slot->body_image)-->
@@ -313,6 +303,16 @@
                                             <!--@end-->
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="triplepopup-field triplepopup-field-full">
+                                    <label>노출 기간</label>
+                                    <div class="triplepopup-inputwrap triplepopup-daterange-wrap">
+                                        <input type="date" name="start_date" value="{$slot->start_date_input}" class="triplepopup-date-flush" />
+                                        <span class="triplepopup-tilde">~</span>
+                                        <input type="date" name="end_date" value="{$slot->end_date_input}" class="triplepopup-date-flush" />
+                                    </div>
+                                    <p class="triplepopup-hint">비워두면 상시 노출됩니다. <b>종료일이 지나면 해당 배너는 자동으로 노출되지 않습니다.</b></p>
                                 </div>
 
                                 <!--@if(count($slot->lang_images) > 1)-->
