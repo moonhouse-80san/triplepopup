@@ -91,6 +91,21 @@
             }
         });
 
+        // 목록의 상태 배지 클릭 → 활성/비활성 전환 (완료 후 새로고침해 예정·종료 상태까지 다시 계산)
+        root.addEventListener('click', function (e) {
+            var pill = e.target.closest ? e.target.closest('.triplepopup-pill-toggle') : null;
+            if (!pill || pill.disabled || typeof Rhymix === 'undefined') return;
+            pill.disabled = true;
+            Rhymix.ajax('triplepopup.procTriplepopupAdminToggleItem', {
+                slot_number: pill.getAttribute('data-slot'),
+                is_active: pill.getAttribute('data-active') === 'Y' ? 'N' : 'Y'
+            }, function () {
+                location.reload();
+            }, function () {
+                pill.disabled = false;
+            });
+        });
+
         syncAllChips();
 
         /* ---------- 실시간 미리보기 ---------- */
@@ -212,6 +227,39 @@
             }
 
             var fileInput = form.querySelector('input[type="file"][name="body_image"]');
+
+            // 기본 배경이미지 선택 → 미리보기 반영 (마지막에 한 동작이 우선: 프리셋 선택 시 선택해 둔 파일은 비움)
+            function showPresetPreview(src) {
+                var pimg   = card.querySelector('.triplepopup-pv-img');
+                var pnoimg = card.querySelector('.triplepopup-pv-noimg');
+                if (!pimg) return;
+                if (src) {
+                    pimg.onload = function () {
+                        if (pimg.naturalWidth && pimg.naturalHeight) applyPreviewRatio(card, pimg.naturalWidth, pimg.naturalHeight);
+                    };
+                    pimg.src = src;
+                    pimg.hidden = false;
+                    if (pnoimg) pnoimg.hidden = true;
+                } else {
+                    pimg.removeAttribute('src');
+                    pimg.hidden = true;
+                    if (pnoimg) pnoimg.hidden = false;
+                }
+                updatePreview(form);
+            }
+            var presetRadios = form.querySelectorAll('input[name="body_preset"]');
+            for (var pr = 0; pr < presetRadios.length; pr++) {
+                presetRadios[pr].addEventListener('change', function () {
+                    var hasFile = fileInput && fileInput.files && fileInput.files[0];
+                    if (this.value !== '0') {
+                        if (fileInput) fileInput.value = '';
+                    } else if (hasFile) {
+                        return;
+                    }
+                    showPresetPreview(this.getAttribute('data-src') || '');
+                });
+            }
+
             if (!fileInput) return;
             fileInput.addEventListener('change', function () {
                 var img   = card.querySelector('.triplepopup-pv-img');
@@ -228,6 +276,8 @@
                         img.src = ev.target.result;
                         img.hidden = false;
                         if (noimg) noimg.hidden = true;
+                        var uploadRadio = form.querySelector('input[name="body_preset"][value="0"]');
+                        if (uploadRadio) uploadRadio.checked = true; // 파일을 고르면 '직접 업로드'로 전환
                         updatePreview(form);
                     };
                     reader.readAsDataURL(file);
@@ -386,6 +436,24 @@
                     var turnOn = !(total > 0 && checked === total); // 전부 선택돼 있으면 해제, 아니면 전체 선택
                     for (var j = 0; j < total; j++) list[j].checked = turnOn;
                     refresh();
+                });
+            }
+
+            // 정렬 기준 변경 → 목록을 즉시 재정렬 (메인 모듈은 항상 맨 앞, 서버 정렬 규칙과 동일)
+            var sortSel = root.querySelector('.triplepopup-modsort-select');
+            if (sortSel) {
+                sortSel.addEventListener('change', function () {
+                    var key   = sortSel.value;
+                    var items = Array.prototype.slice.call(wrap.querySelectorAll('.triplepopup-module-item'));
+                    items.sort(function (a, b) {
+                        var am = a.classList.contains('triplepopup-is-main'), bm = b.classList.contains('triplepopup-is-main');
+                        if (am !== bm) return am ? -1 : 1;
+                        if (key === 'created') return (parseInt(a.getAttribute('data-srl'), 10) || 0) - (parseInt(b.getAttribute('data-srl'), 10) || 0);
+                        var av = (a.getAttribute(key === 'mid' ? 'data-mid' : 'data-title') || '').toLowerCase();
+                        var bv = (b.getAttribute(key === 'mid' ? 'data-mid' : 'data-title') || '').toLowerCase();
+                        return av < bv ? -1 : (av > bv ? 1 : 0);
+                    });
+                    for (var k = 0; k < items.length; k++) wrap.appendChild(items[k]);
                 });
             }
 

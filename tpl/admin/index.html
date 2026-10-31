@@ -53,7 +53,7 @@
             배너 관리 <span class="triplepopup-card-head-sub">1~6번 순서대로 표시</span>
         </div>
         <div class="triplepopup-card-body">
-            <p class="triplepopup-note">각 배너의 <b>등록·수정</b> 버튼을 누르면 아래에 편집 영역이 펼쳐집니다. 왼쪽 손잡이를 <b>드래그</b>하여 순서를 바꿀 수 있고, 4개 이상 활성화하면 슬라이드로 전환됩니다.<br />텍스트 입력란 오른쪽 <b>지구본 아이콘</b>을 누르면 라이믹스 다국어를 설정할 수 있고, 접속 언어에 맞는 문구가 팝업에 표시됩니다.</p>
+            <p class="triplepopup-note">각 배너의 <b>등록·수정</b> 버튼을 누르면 아래에 편집 영역이 펼쳐집니다. 왼쪽 손잡이를 <b>드래그</b>하여 순서를 바꿀 수 있고, 4개 이상 활성화하면 슬라이드로 전환됩니다.<br />텍스트 입력란 오른쪽 <b>지구본 아이콘</b>을 누르면 라이믹스 다국어를 설정할 수 있고, 접속 언어에 맞는 문구가 팝업에 표시됩니다.<br />상태의 <b>활성·비활성 배지</b>를 누르면 해당 배너의 노출 상태를 바로 전환할 수 있습니다.</p>
 
             <div class="triplepopup-table" data-order-url="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveOrder')}">
                 <div class="triplepopup-thead">
@@ -97,13 +97,13 @@
                         </div>
                         <div class="triplepopup-td triplepopup-col-active">
                             <!--@if($slot->status === 'active')-->
-                            <span class="triplepopup-pill triplepopup-pill-on">활성</span>
+                            <button type="button" class="triplepopup-pill triplepopup-pill-on triplepopup-pill-toggle" title="클릭하여 활성/비활성 전환" data-slot="{$slot->slot_number}" data-active="{$slot->is_active}">활성</button>
                             <!--@elseif($slot->status === 'pending')-->
-                            <span class="triplepopup-pill triplepopup-pill-pending">예정</span>
+                            <button type="button" class="triplepopup-pill triplepopup-pill-pending triplepopup-pill-toggle" title="클릭하여 활성/비활성 전환" data-slot="{$slot->slot_number}" data-active="{$slot->is_active}">예정</button>
                             <!--@elseif($slot->status === 'expired')-->
-                            <span class="triplepopup-pill triplepopup-pill-expired">종료</span>
+                            <button type="button" class="triplepopup-pill triplepopup-pill-expired triplepopup-pill-toggle" title="클릭하여 활성/비활성 전환" data-slot="{$slot->slot_number}" data-active="{$slot->is_active}">종료</button>
                             <!--@elseif($slot->status === 'inactive')-->
-                            <span class="triplepopup-pill triplepopup-pill-off">비활성</span>
+                            <button type="button" class="triplepopup-pill triplepopup-pill-off triplepopup-pill-toggle" title="클릭하여 활성/비활성 전환" data-slot="{$slot->slot_number}" data-active="{$slot->is_active}">비활성</button>
                             <!--@else-->
                             <span class="triplepopup-pill triplepopup-pill-none">미등록</span>
                             <!--@end-->
@@ -274,8 +274,8 @@
                                         <div class="triplepopup-preview-card">
                                             <div class="triplepopup-pv-html triplepopup-pv-html-top" hidden="hidden"></div>
                                             <div class="triplepopup-preview-media">
-                                                <img class="triplepopup-pv-img" src="{$slot->body_image}" alt="" <!--@if(!$slot->body_image)-->hidden="hidden"<!--@end--> />
-                                                <div class="triplepopup-pv-noimg" <!--@if($slot->body_image)-->hidden="hidden"<!--@end-->>이미지를 등록하면<br />여기에 표시됩니다</div>
+                                                <img class="triplepopup-pv-img" src="{$slot->preview_image}" alt="" <!--@if(!$slot->preview_image)-->hidden="hidden"<!--@end--> />
+                                                <div class="triplepopup-pv-noimg" <!--@if($slot->preview_image)-->hidden="hidden"<!--@end-->>이미지를 등록하면<br />여기에 표시됩니다</div>
                                                 <span class="triplepopup-pv-badge" style="background:{$slot->badge_bg_color};color:{$slot->badge_text_color}" hidden="hidden"></span>
                                                 <div class="triplepopup-pv-overlay" hidden="hidden">
                                                     <div class="triplepopup-pv-title" hidden="hidden"></div>
@@ -290,6 +290,19 @@
 
                                 <div class="triplepopup-field triplepopup-field-full">
                                     <label>본문 이미지</label>
+                                    <div class="triplepopup-bgpresets">
+                                        <label class="triplepopup-bgpreset triplepopup-bgpreset-none" title="직접 업로드한 이미지 사용">
+                                            <input type="radio" name="body_preset" value="0" data-src="{$slot->body_image}" <!--@if(!$slot->body_preset)-->checked="checked"<!--@end--> />
+                                            <span>직접<br />업로드</span>
+                                        </label>
+                                        <!--@foreach($slot->presets as $pr)-->
+                                        <label class="triplepopup-bgpreset" title="기본 배경 {$pr->no}">
+                                            <input type="radio" name="body_preset" value="{$pr->no}" data-src="{$pr->url}" <!--@if($slot->body_preset == $pr->no)-->checked="checked"<!--@end--> />
+                                            <img src="{$pr->url}" alt="기본 배경 {$pr->no}" loading="lazy" />
+                                        </label>
+                                        <!--@end-->
+                                    </div>
+                                    <p class="triplepopup-hint">기본 배경을 고르거나, 아래에서 원하는 이미지를 직접 올릴 수 있습니다. 새 파일을 올리면 업로드한 이미지가 사용됩니다.</p>
                                     <div class="triplepopup-upload">
                                         <!--@if($slot->body_image)-->
                                         <div class="triplepopup-upload-thumb"><img src="{$slot->body_image}" alt="" /></div>
@@ -379,13 +392,20 @@
 
                 <!--@if($modules)-->
                 <div class="triplepopup-modtoolbar">
-                    <button type="button" class="triplepopup-btn triplepopup-btn-ghost triplepopup-modules-all">전체 선택</button>
+                    <div class="triplepopup-modtools">
+                        <button type="button" class="triplepopup-btn triplepopup-btn-ghost triplepopup-modules-all">전체 선택</button>
+                        <select name="module_sort" class="triplepopup-select triplepopup-modsort-select" title="모듈 정렬 순서">
+                            <option value="title" <!--@if($config->module_sort === 'title')-->selected="selected"<!--@end-->>제목순 (문하우스)</option>
+                            <option value="mid" <!--@if($config->module_sort === 'mid')-->selected="selected"<!--@end-->>이름순 (home)</option>
+                            <option value="created" <!--@if($config->module_sort === 'created')-->selected="selected"<!--@end-->>생성순</option>
+                        </select>
+                    </div>
                     <span class="triplepopup-modcount"><b class="triplepopup-modcount-num">0</b>개 선택됨</span>
                 </div>
 
                 <div class="triplepopup-modules">
                     <!--@foreach($modules as $m)-->
-                    <label class="triplepopup-module-item <!--@if($m->checked)-->triplepopup-is-checked<!--@end--> <!--@if($m->is_main)-->triplepopup-is-main<!--@end-->">
+                    <label class="triplepopup-module-item <!--@if($m->checked)-->triplepopup-is-checked<!--@end--> <!--@if($m->is_main)-->triplepopup-is-main<!--@end-->" data-title="{escape($m->title)}" data-mid="{escape($m->mid)}" data-srl="{$m->module_srl}">
                         <input type="checkbox" name="target_mids[]" value="{escape($m->mid)}" class="triplepopup-module-input" <!--@if($m->checked)-->checked="checked"<!--@end--> />
                         <span class="triplepopup-module-text">
                             <span class="triplepopup-module-name">{escape($m->title)}<!--@if($m->is_main)--> <span class="triplepopup-module-tag">메인</span><!--@end--></span>

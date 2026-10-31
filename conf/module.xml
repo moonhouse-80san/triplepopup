@@ -7,6 +7,7 @@
         <action name="procTriplepopupAdminSaveOrder"  type="controller" admin_auth="manager" check_csrf="false" />
         <action name="procTriplepopupAdminSaveItem"   type="controller" admin_auth="manager" />
         <action name="procTriplepopupAdminDeleteItem" type="controller" admin_auth="manager" />
+        <action name="procTriplepopupAdminToggleItem" type="controller" admin_auth="manager" />
         <action name="getTriplepopupData"             type="view"       check_csrf="false" />
     </actions>
 </module>

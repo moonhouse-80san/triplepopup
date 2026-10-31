@@ -170,6 +170,7 @@ class triplepopupAdminController extends triplepopup
         if (!$config) $config = new stdClass();
 
         $config->target_mids = $this->_normalizeTargetMids(Context::get('target_mids'));
+        $config->module_sort = in_array(Context::get('module_sort'), array('title', 'mid', 'created'), true) ? Context::get('module_sort') : 'title';
 
         $oModuleController = getController('module');
         $oModuleController->updateModuleConfig('triplepopup', $config);
@@ -298,6 +299,7 @@ class triplepopupAdminController extends triplepopup
         $args->badge_bg_color  = $this->_normalizeColor(Context::get('badge_bg_color'));
         $args->badge_text_color = $this->_normalizeColor(Context::get('badge_text_color'), '#ffffff');
         $args->body_image      = $body_image;
+        $args->body_preset     = $new_uploaded ? 0 : max(0, min(6, (int)Context::get('body_preset'))); // 새 파일을 올리면 업로드 이미지 우선
         $args->body_images     = $body_images;
         $args->title_text      = $this->_normalizeLangText(Context::get('title_text'), true);
         $args->sub_text        = $this->_normalizeLangText(Context::get('sub_text'), true);
@@ -327,6 +329,25 @@ class triplepopupAdminController extends triplepopup
 
         $this->setMessage('저장되었습니다.');
         $this->setRedirectUrl($this->_getAdminReturnUrl());
+    }
+
+    /** 목록의 상태 배지 클릭 시 해당 배너의 활성/비활성 전환 (AJAX) */
+    function procTriplepopupAdminToggleItem()
+    {
+        $slot_number = (int)Context::get('slot_number');
+        if ($slot_number < 1 || $slot_number > 6 || !getModel('triplepopup')->getPopupItem($slot_number)) {
+            return $this->setError(-1, '등록된 배너가 아닙니다.');
+        }
+
+        $args = new stdClass();
+        $args->slot_number = $slot_number;
+        $args->is_active   = Context::get('is_active') === 'Y' ? 'Y' : 'N';
+        $output = executeQuery('triplepopup.updatePopupItemActive', $args);
+        if (!$output->toBool()) {
+            return $this->setError(-1, '상태 변경 중 오류가 발생했습니다: ' . $output->getMessage());
+        }
+
+        $this->setMessage($args->is_active === 'Y' ? '활성화되었습니다.' : '비활성화되었습니다.');
     }
 
     function procTriplepopupAdminDeleteItem()

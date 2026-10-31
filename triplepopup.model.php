@@ -13,6 +13,7 @@ class triplepopupModel extends triplepopup
         if (empty($config->slot_order))      $config->slot_order = '1,2,3,4,5,6';
         if (empty($config->popup_width))     $config->popup_width = 420;
         if (!isset($config->target_mids) || !is_array($config->target_mids)) $config->target_mids = array();
+        if (!in_array($config->module_sort ?? '', array('title', 'mid', 'created'), true)) $config->module_sort = 'title';
         return $config;
     }
 
@@ -38,7 +39,7 @@ class triplepopupModel extends triplepopup
     /**
      * 사이트의 전체 모듈(mid) 목록을 팝업 노출 대상 선택용으로 반환.
      * 각 항목: mid, module(타입), module_type(대문자), title(표시명), checked(현재 선택 여부), is_main(메인 여부)
-     * 정렬: 메인 모듈을 항상 첫 번째에 두고, 나머지는 표시명 기준 정렬.
+     * 정렬: 메인 모듈을 항상 첫 번째에 두고, 나머지는 설정(module_sort)에 따라 제목순/이름순(mid)/생성순.
      */
     function getTargetModuleList()
     {
@@ -55,6 +56,7 @@ class triplepopupModel extends triplepopup
             foreach ($mid_list as $mid => $info) {
                 $row = new stdClass();
                 $row->mid         = (string)$mid;
+                $row->module_srl  = isset($info->module_srl) ? (int)$info->module_srl : 0;
                 $row->module      = isset($info->module) ? (string)$info->module : '';
                 $row->module_type = strtoupper($row->module);
                 $title = (isset($info->browser_title) && trim((string)$info->browser_title) !== '')
@@ -66,9 +68,12 @@ class triplepopupModel extends triplepopup
             }
         }
 
-        // 메인 모듈을 항상 맨 앞에, 그 외는 표시명 기준 정렬
-        usort($list, function ($a, $b) {
+        // 메인 모듈을 항상 맨 앞에, 그 외는 설정한 기준(제목순·이름순·생성순)으로 정렬
+        $sort = $config->module_sort;
+        usort($list, function ($a, $b) use ($sort) {
             if ($a->is_main !== $b->is_main) return $a->is_main ? -1 : 1;
+            if ($sort === 'mid') return strcasecmp($a->mid, $b->mid);
+            if ($sort === 'created') return $a->module_srl - $b->module_srl;
             return strcasecmp($a->title, $b->title);
         });
         return $list;
@@ -111,6 +116,10 @@ class triplepopupModel extends triplepopup
             $end   = isset($item->end_date)   ? (string)$item->end_date   : '';
             if ($start !== '' && $start > $today) continue; // 아직 시작 전
             if ($end   !== '' && $end   < $today) continue; // 이미 종료됨
+
+            // 기본 배경이미지 선택 시 해당 이미지 사용 (업로드 이미지보다 우선, 언어별 이미지보다는 후순위)
+            if (!empty($item->body_preset)) $item->body_image = $this->getPresetImageUrl($item->body_preset);
+            unset($item->body_preset);
 
             // 언어별 이미지: 현재 접속 언어 이미지가 있으면 교체, 없으면 기본 이미지 사용
             $lang_images = $this->decodeLangImages(isset($item->body_images) ? $item->body_images : '');
@@ -211,6 +220,7 @@ class triplepopupModel extends triplepopup
                 $slot->html_position   = 'top';
                 $slot->html_bg_color   = '#ffffff';
                 $slot->html_bg_trans   = 0;
+                $slot->body_preset     = 0;
                 $slot->source_document_srl = '';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
@@ -234,6 +244,17 @@ class triplepopupModel extends triplepopup
             if (!isset($slot->html_position) || $slot->html_position !== 'overlay') $slot->html_position = 'top';
             if (!isset($slot->html_bg_color) || $slot->html_bg_color === '') $slot->html_bg_color = '#ffffff';
             $slot->html_bg_trans = isset($slot->html_bg_trans) ? max(0, min(100, (int)$slot->html_bg_trans)) : 0;
+
+            // 기본 배경이미지 목록·선택값 (관리자용)
+            $slot->body_preset = isset($slot->body_preset) ? max(0, min(6, (int)$slot->body_preset)) : 0;
+            $slot->presets     = array();
+            for ($pn = 1; $pn <= 6; $pn++) {
+                $pr = new stdClass();
+                $pr->no  = $pn;
+                $pr->url = $this->getPresetImageUrl($pn);
+                $slot->presets[] = $pr;
+            }
+            $slot->preview_image = $slot->body_preset ? $slot->presets[$slot->body_preset - 1]->url : $slot->body_image;
 
             // 게시글 가져오기: 연결된 글 번호·제목 (관리자 표시용)
             if (empty($slot->source_document_srl)) $slot->source_document_srl = '';

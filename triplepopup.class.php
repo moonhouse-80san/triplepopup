@@ -67,6 +67,9 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
+            return true;
+        }
         if (!$this->_isTriggerRegistered()) {
             return true;
         }
@@ -117,6 +120,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
             $oDB->addColumn('triplepopup_slots', 'html_bg_trans', 'tinyint', 3, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
+            $oDB->addColumn('triplepopup_slots', 'body_preset', 'tinyint', 1, 0);
         }
         if (!$this->_isTriggerRegistered()) {
             $this->_registerTrigger();
@@ -181,6 +187,9 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
             $oDB->addColumn('triplepopup_slots', 'html_bg_trans', 'tinyint', 3, 0);
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
+            $oDB->addColumn('triplepopup_slots', 'body_preset', 'tinyint', 1, 0);
+        }
     }
 
     function _isTriggerRegistered()
@@ -237,6 +246,12 @@ class triplepopup extends ModuleObject
     }
 
     /** 언어별 이미지 맵(JSON) → 배열. 사용 중인 언어 코드만 남긴다. */
+    // 기본 배경이미지(1~6) 주소
+    function getPresetImageUrl($no)
+    {
+        return \RX_BASEURL . 'modules/triplepopup/tpl/img/bg/background_' . (int)$no . '.jpg';
+    }
+
     function decodeLangImages($json)
     {
         $map = json_decode((string)$json, true);
