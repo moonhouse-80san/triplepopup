@@ -15,6 +15,7 @@
         <column name="html_bg_trans"   var="html_bg_trans"   force="force" />
         <column name="body_preset"     var="body_preset"     force="force" />
         <column name="source_document_srl" var="source_document_srl" force="force" />
+        <column name="target_groups"   var="target_groups"   force="force" />
         <column name="click_url"       var="click_url"       force="force" />
         <column name="click_target"    var="click_target" />
         <column name="footer_text"     var="footer_text"     force="force" />

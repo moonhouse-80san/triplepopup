@@ -266,6 +266,15 @@ class triplepopupAdminController extends triplepopup
             }
         }
 
+        // 노출 회원그룹: 실제 존재하는 그룹(group_srl)과 'guest'(비로그인)만 허용 — 미선택이면 빈 값(전체 노출)
+        $validGroups  = \MemberModel::getGroups();
+        $targetGroups = array();
+        foreach ((array)Context::get('target_groups') as $group) {
+            $group = trim((string)$group);
+            if (in_array($group, $targetGroups, true)) continue;
+            if ($group === 'guest' || (ctype_digit($group) && isset($validGroups[(int)$group]))) $targetGroups[] = $group;
+        }
+
         $oModel   = getModel('triplepopup');
         $existing = $oModel->getPopupItem($slot_number);
 
@@ -308,6 +317,7 @@ class triplepopupAdminController extends triplepopup
         $args->html_bg_color   = $this->_normalizeColor(Context::get('html_bg_color'), '#ffffff');
         $args->html_bg_trans   = max(0, min(100, (int)Context::get('html_bg_trans')));
         $args->source_document_srl = $sourceSrl;
+        $args->target_groups   = implode(',', $targetGroups);
         $args->click_url       = $this->_normalizeUrl(Context::get('click_url'));
         $args->click_target    = (Context::get('click_target') === 'self') ? 'self' : 'blank';
         $args->footer_text     = $this->_normalizeLangText(Context::get('footer_text'));

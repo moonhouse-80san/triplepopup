@@ -14,6 +14,7 @@
     <column name="html_bg_trans"   type="tinyint"  size="3"   default="0" />
     <column name="body_preset"     type="tinyint"  size="1"   default="0" />
     <column name="source_document_srl" type="bigint" size="11" />
+    <column name="target_groups"   type="text" />
     <column name="click_url"       type="varchar"  size="500" />
     <column name="click_target"    type="varchar"  size="10"  default="blank" />
     <column name="footer_text"     type="varchar"  size="200" />

@@ -465,6 +465,14 @@
             refresh();
         }());
 
+        /* ---------- 배너 노출 회원그룹 (선택 카드 표시) ---------- */
+        root.addEventListener('change', function (e) {
+            var t = e.target;
+            if (!t || !t.classList || !t.classList.contains('triplepopup-group-input')) return;
+            var item = t.closest('.triplepopup-group-item');
+            if (item) item.classList.toggle('triplepopup-is-checked', t.checked);
+        });
+
         /* ---------- 드래그 순서 변경 ---------- */
         var table = root.querySelector('.triplepopup-table');
         if (!table) return;

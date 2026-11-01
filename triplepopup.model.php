@@ -111,11 +111,21 @@ class triplepopupModel extends triplepopup
         // 노출 기간 필터: 시작일 이전이거나 종료일이 지난 항목은 제외 (자동 비노출)
         $today  = date('Ymd');
         $filtered = array();
+
+        // 현재 방문자의 회원그룹: 로그인 회원은 소속 그룹(group_srl), 비로그인은 'guest'
+        $memberSrl    = \Rhymix\Framework\Session::getMemberSrl();
+        $viewerGroups = $memberSrl ? array_map('strval', array_keys(\MemberModel::getMemberGroups($memberSrl))) : array('guest');
+
         foreach ($items as $item) {
             $start = isset($item->start_date) ? (string)$item->start_date : '';
             $end   = isset($item->end_date)   ? (string)$item->end_date   : '';
             if ($start !== '' && $start > $today) continue; // 아직 시작 전
             if ($end   !== '' && $end   < $today) continue; // 이미 종료됨
+
+            // 회원그룹 필터: 지정이 없으면 전체 노출, 지정하면 해당 그룹 회원(또는 'guest' 선택 시 비로그인)에게만 노출
+            $targetGroups = $this->_splitTargetGroups(isset($item->target_groups) ? $item->target_groups : '');
+            unset($item->target_groups);
+            if (!empty($targetGroups) && !array_intersect($targetGroups, $viewerGroups)) continue;
 
             // 기본 배경이미지 선택 시 해당 이미지 사용 (업로드 이미지보다 우선, 언어별 이미지보다는 후순위)
             if (!empty($item->body_preset)) $item->body_image = $this->getPresetImageUrl($item->body_preset);
@@ -202,6 +212,21 @@ class triplepopupModel extends triplepopup
         $today  = date('Ymd');
         $byNum = array();
 
+        // 노출 회원그룹 선택지: 비로그인 + 사이트의 회원그룹 전체 (관리자 편집 폼용)
+        $groupChoices = array();
+        $guest = new stdClass();
+        $guest->value = 'guest';
+        $guest->title = '비로그인';
+        $guest->is_guest = true;
+        $groupChoices[] = $guest;
+        foreach (\MemberModel::getGroups() as $groupSrl => $group) {
+            $choice = new stdClass();
+            $choice->value    = (string)$groupSrl;
+            $choice->title    = $this->resolveLangText($group->title);
+            $choice->is_guest = false;
+            $groupChoices[] = $choice;
+        }
+
         for ($i = 1; $i <= 6; $i++) {
             if (isset($map[$i]) && $map[$i]) {
                 $slot = $map[$i];
@@ -222,6 +247,7 @@ class triplepopupModel extends triplepopup
                 $slot->html_bg_trans   = 0;
                 $slot->body_preset     = 0;
                 $slot->source_document_srl = '';
+                $slot->target_groups   = '';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
                 $slot->footer_text     = '';
@@ -259,6 +285,15 @@ class triplepopupModel extends triplepopup
             // 게시글 가져오기: 연결된 글 번호·제목 (관리자 표시용)
             if (empty($slot->source_document_srl)) $slot->source_document_srl = '';
             $slot->source_document_title = $slot->source_document_srl ? \DocumentModel::getDocument((int)$slot->source_document_srl, false, false)->getTitleText() : '';
+
+            // 노출 회원그룹: 선택지에 현재 선택 여부를 표시 (미선택 = 전체 노출)
+            $pickedGroups = $this->_splitTargetGroups(isset($slot->target_groups) ? $slot->target_groups : '');
+            $slot->groups = array();
+            foreach ($groupChoices as $choice) {
+                $row = clone $choice;
+                $row->checked = in_array($row->value, $pickedGroups, true);
+                $slot->groups[] = $row;
+            }
 
             // 언어별 이미지 목록 (관리자 탭용)
             $lang_images = $this->decodeLangImages(isset($slot->body_images) ? $slot->body_images : '');
@@ -305,6 +340,12 @@ class triplepopupModel extends triplepopup
             $list[] = $slot;
         }
         return $list;
+    }
+
+    /** 'guest,3,5' 형태의 저장값 → 배열 (빈 값이면 빈 배열 = 전체 노출) */
+    function _splitTargetGroups($value)
+    {
+        return array_values(array_filter(explode(',', (string)$value), 'strlen'));
     }
 
     function _toDateInput($ymd)

@@ -70,6 +70,9 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
+            return true;
+        }
         if (!$this->_isTriggerRegistered()) {
             return true;
         }
@@ -123,6 +126,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
             $oDB->addColumn('triplepopup_slots', 'body_preset', 'tinyint', 1, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
+            $oDB->addColumn('triplepopup_slots', 'target_groups', 'text');
         }
         if (!$this->_isTriggerRegistered()) {
             $this->_registerTrigger();
@@ -189,6 +195,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
             $oDB->addColumn('triplepopup_slots', 'body_preset', 'tinyint', 1, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
+            $oDB->addColumn('triplepopup_slots', 'target_groups', 'text');
         }
     }
 

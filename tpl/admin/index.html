@@ -357,6 +357,19 @@
                                 </div>
                                 <!--@end-->
 
+                                <div class="triplepopup-field triplepopup-field-full">
+                                    <label>회원그룹 <span class="triplepopup-label-hint">노출할 회원그룹 선택</span></label>
+                                    <div class="triplepopup-groups">
+                                        <!--@foreach($slot->groups as $g)-->
+                                        <label class="triplepopup-group-item <!--@if($g->checked)-->triplepopup-is-checked<!--@end--> <!--@if($g->is_guest)-->triplepopup-is-guest<!--@end-->">
+                                            <input type="checkbox" name="target_groups[]" value="{escape($g->value)}" class="triplepopup-group-input" <!--@if($g->checked)-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-group-name">{escape($g->title)}</span>
+                                        </label>
+                                        <!--@end-->
+                                    </div>
+                                    <p class="triplepopup-hint">선택하지 않으면 <b>모든 방문자에게 노출</b>됩니다. <b>비로그인</b>만 선택하면 로그인하지 않은 방문자에게만 노출됩니다.</p>
+                                </div>
+
                                 <div class="triplepopup-field">
                                     <label>활성화</label>
                                     <select name="is_active" class="triplepopup-select">
