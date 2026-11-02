@@ -2,12 +2,15 @@
 <module version="0.2">
     <title xml:lang="ko">트리플 팝업</title>
     <description xml:lang="ko">레이어 팝업 관리 모듈 (배너 6개 · 노출기간 · 순서변경 · 대상 모듈 · 글자/배경 색상 · 링크 열기방식 · 다국어 텍스트·이미지 · 텍스트 본문 CKEditor · 노출 회원그룹)</description>
-    <version>3.2.3</version>
-    <date>2026-11-01</date>
+    <version>3.3.0</version>
+    <date>2026-11-02</date>
     <category>system</category>
     <author email_address="hello@playwebon.com" link="https://playwebon.com">
         <name xml:lang="ko">플레이웹</name>
     </author>
+	<author email_address="80san@moonhouse.co.kr" link="https://moonhouse.co.kr/">
+		<name xml:lang="ko">80san</name>
+	</author>
     <license>LGPL v2</license>
     <admin_index_act>dispTriplepopupAdminIndex</admin_index_act>
 </module>

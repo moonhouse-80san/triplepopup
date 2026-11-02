@@ -12,6 +12,7 @@ class triplepopupModel extends triplepopup
         if (empty($config->is_active))      $config->is_active = 'Y';
         if (empty($config->slot_order))      $config->slot_order = '1,2,3,4,5,6';
         if (empty($config->popup_width))     $config->popup_width = 420;
+        if (empty($config->close_days))      $config->close_days = 1;
         if (!isset($config->target_mids) || !is_array($config->target_mids)) $config->target_mids = array();
         if (!in_array($config->module_sort ?? '', array('title', 'mid', 'created'), true)) $config->module_sort = 'title';
         return $config;

@@ -154,6 +154,8 @@ class triplepopupAdminController extends triplepopup
         if ($w < 180) $w = 180;
         if ($w > 900) $w = 900;
         $config->popup_width = $w;
+        // 팝업창 닫는 날짜(닫기 후 다시 보이지 않는 일수): 1~365일 (기본 1 = 하루)
+        $config->close_days = max(1, min(365, (int)Context::get('close_days')));
 
         $oModuleController = getController('module');
         $oModuleController->updateModuleConfig('triplepopup', $config);

@@ -473,6 +473,31 @@
             if (item) item.classList.toggle('triplepopup-is-checked', t.checked);
         });
 
+        /* ---------- 숫자 입력 증감 버튼 (▲▼) ---------- */
+        Array.prototype.forEach.call(root.querySelectorAll('input.triplepopup-input-spin'), function (input) {
+            var svg = function (pts) {
+                return '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="' + pts + '"></polyline></svg>';
+            };
+            var box = document.createElement('span');
+            box.className = 'triplepopup-spin';
+            box.innerHTML = '<button type="button" class="triplepopup-spin-btn" data-dir="1" tabindex="-1" aria-label="증가">' + svg('2 7 5 3 8 7') + '</button>' +
+                            '<button type="button" class="triplepopup-spin-btn" data-dir="-1" tabindex="-1" aria-label="감소">' + svg('2 3 5 7 8 3') + '</button>';
+            input.parentNode.insertBefore(box, input.nextSibling);
+
+            box.addEventListener('click', function (e) {
+                var btn = e.target.closest ? e.target.closest('.triplepopup-spin-btn') : null;
+                if (!btn) return;
+                var min = parseInt(input.min, 10), max = parseInt(input.max, 10);
+                var v = parseInt(input.value, 10);
+                v = isNaN(v) ? (isNaN(min) ? 0 : min) : v + parseInt(btn.getAttribute('data-dir'), 10);
+                if (!isNaN(min) && v < min) v = min;
+                if (!isNaN(max) && v > max) v = max;
+                input.value = v;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        });
+
         /* ---------- 드래그 순서 변경 ---------- */
         var table = root.querySelector('.triplepopup-table');
         if (!table) return;

@@ -23,7 +23,7 @@
                         <label class="triplepopup-label">자동 슬라이드 시간</label>
                         <div class="triplepopup-control triplepopup-control-inline">
                             <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix triplepopup-ctl">
-                                <input type="number" name="slide_interval" value="{$config->slide_interval}" min="1" max="60" class="triplepopup-input-flush" />
+                                <input type="number" name="slide_interval" value="{$config->slide_interval}" min="1" max="60" step="1" class="triplepopup-input-flush triplepopup-input-spin" />
                                 <span class="triplepopup-suffix">초</span>
                             </div>
                             <span class="triplepopup-hint">팝업 4개 이상일 때 슬라이드 적용</span>
@@ -37,6 +37,16 @@
                                 <span class="triplepopup-suffix">px</span>
                             </div>
                             <span class="triplepopup-hint">카드 1장의 최대 가로폭 (180~900, 기본 420). 세로는 이미지·HTML에 맞춰 자동</span>
+                        </div>
+                    </div>
+                    <div class="triplepopup-form-row">
+                        <label class="triplepopup-label">팝업창 닫는 날짜</label>
+                        <div class="triplepopup-control triplepopup-control-inline">
+                            <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix triplepopup-ctl">
+                                <input type="number" name="close_days" value="{$config->close_days}" min="1" max="365" step="1" class="triplepopup-input-flush triplepopup-input-spin" />
+                                <span class="triplepopup-suffix">일</span>
+                            </div>
+                            <span class="triplepopup-hint">팝업창이 보이지 않는 날 수 (기본 1이 하루입니다.) 2 이상이면 팝업에 'N일간 닫기'로 표시됩니다.</span>
                         </div>
                     </div>
                 </div>

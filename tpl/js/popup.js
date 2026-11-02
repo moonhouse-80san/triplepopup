@@ -10,8 +10,10 @@
         return match ? match[2] : null;
     }
 
-    function setCookieUntilMidnight(name) {
+    // days 일간 숨김: 1 = 오늘 자정까지, 7 = 오늘 포함 7일째 자정까지
+    function setCookieForDays(name, days) {
         var d = new Date();
+        d.setDate(d.getDate() + days - 1);
         d.setHours(23, 59, 59, 0);
         document.cookie = name + '=1;expires=' + d.toUTCString() + ';path=/';
     }
@@ -61,6 +63,7 @@
         items        = items.slice(0, count);
         var interval = Math.max(1, parseInt(config.slide_interval, 10) || 3) * 1000;
         var maxW     = parseInt(config.popup_width, 10) || 420;
+        var closeDays = Math.max(1, Math.min(365, parseInt(config.close_days, 10) || 1));
 
         var layout       = getLayout(count, maxW);
         var currentIndex = 0;
@@ -112,7 +115,7 @@
 
         var todayBtn = document.createElement('button');
         todayBtn.className = 'triplepopup-pop-today-close';
-        todayBtn.innerHTML = '&#10003; 오늘하루 그만보기';
+        todayBtn.innerHTML = (closeDays > 1) ? '&#10003; ' + closeDays + '일간 닫기' : '&#10003; 오늘하루 그만보기';
 
         var closeBtn = document.createElement('button');
         closeBtn.className = 'triplepopup-pop-close-btn';
@@ -197,7 +200,7 @@
         nextBtn.addEventListener('click', function () { goNext(); restartTimer(); });
 
         todayBtn.addEventListener('click', function () {
-            setCookieUntilMidnight(COOKIE_NAME);
+            setCookieForDays(COOKIE_NAME, closeDays);
             clearInterval(slideTimer);
             overlay.parentNode && overlay.parentNode.removeChild(overlay);
         });

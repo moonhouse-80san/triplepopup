@@ -1605,3 +1605,47 @@
 @media (max-width: 560px) {
     .triplepopup-admin .triplepopup-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---------- 숫자 증감 버튼 (v3.2.7) ---------- */
+/* 접미사 숫자 입력칸: 글자를 세로 가운데로 */
+.triplepopup-admin .triplepopup-inputwrap-suffix input[type="number"] {
+    box-sizing: border-box;
+    height: 100% !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: normal !important;
+}
+/* ▲▼ 버튼 (브라우저 기본 화살표는 모바일에서 보이지 않아 직접 그린다) */
+.triplepopup-admin .triplepopup-spin {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 26px;
+    height: 32px;
+    margin: 0 10px 0 4px;
+    border: var(--tpop-bw) solid var(--tpop-line-soft);
+    border-radius: 7px;
+    background: #fafafc;
+    overflow: hidden;
+}
+.triplepopup-admin .triplepopup-spin-btn {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--tpop-text-sub);
+    line-height: 1;
+    cursor: pointer;
+}
+.triplepopup-admin .triplepopup-spin-btn + .triplepopup-spin-btn { border-top: var(--tpop-bw) solid var(--tpop-line-soft); }
+.triplepopup-admin .triplepopup-spin-btn:hover { background: var(--tpop-accent-soft); color: var(--tpop-accent); }
+.triplepopup-admin .triplepopup-spin-btn:active { background: var(--tpop-accent-ring); }
+.triplepopup-admin .triplepopup-spin-btn svg { width: 10px; height: 10px; pointer-events: none; }
