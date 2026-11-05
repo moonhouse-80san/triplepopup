@@ -13,9 +13,12 @@
         <column name="html_position"   var="html_position" />
         <column name="html_bg_color"   var="html_bg_color" />
         <column name="html_bg_trans"   var="html_bg_trans"   force="force" />
+        <column name="border_width"    var="border_width"    force="force" />
+        <column name="border_color"    var="border_color" />
         <column name="body_preset"     var="body_preset"     force="force" />
         <column name="source_document_srl" var="source_document_srl" force="force" />
         <column name="target_groups"   var="target_groups"   force="force" />
+        <column name="target_modules"  var="target_modules"  force="force" />
         <column name="click_url"       var="click_url"       force="force" />
         <column name="click_target"    var="click_target" />
         <column name="footer_text"     var="footer_text"     force="force" />

@@ -73,6 +73,15 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
+            return true;
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
+            return true;
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
+            return true;
+        }
         if (!$this->_isTriggerRegistered()) {
             return true;
         }
@@ -129,6 +138,15 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
             $oDB->addColumn('triplepopup_slots', 'target_groups', 'text');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
+            $oDB->addColumn('triplepopup_slots', 'border_width', 'tinyint', 3, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
+            $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
+            $oDB->addColumn('triplepopup_slots', 'target_modules', 'text');
         }
         if (!$this->_isTriggerRegistered()) {
             $this->_registerTrigger();
@@ -198,6 +216,15 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
             $oDB->addColumn('triplepopup_slots', 'target_groups', 'text');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
+            $oDB->addColumn('triplepopup_slots', 'border_width', 'tinyint', 3, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
+            $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
+            $oDB->addColumn('triplepopup_slots', 'target_modules', 'text');
         }
     }
 

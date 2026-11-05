@@ -277,6 +277,24 @@ class triplepopupAdminController extends triplepopup
             if ($group === 'guest' || (ctype_digit($group) && isset($validGroups[(int)$group]))) $targetGroups[] = $group;
         }
 
+        // 노출 모듈: 쉼표·공백으로 구분한 모듈 번호(module_srl)만 허용하고 실제 존재하는 모듈인지 확인 — 비우면 동작 모듈설정을 따름 (업로드 전에 검증)
+        $validModules = array();
+        foreach ((array)getModel('module')->getMidList() as $info) {
+            $validModules[(int)$info->module_srl] = true;
+        }
+        $targetModules = array();
+        foreach (preg_split('/[^0-9]+/', (string)Context::get('target_modules'), -1, PREG_SPLIT_NO_EMPTY) as $srl) {
+            $srl = (string)(int)$srl;
+            if ($srl === '0' || in_array($srl, $targetModules, true)) continue;
+            if (!empty($validModules) && !isset($validModules[(int)$srl])) {
+                return $this->setError(-1, '존재하지 않는 모듈 번호입니다: ' . $srl);
+            }
+            $targetModules[] = $srl;
+        }
+        if (count($targetModules) > 100) {
+            return $this->setError(-1, '노출 모듈은 100개 이하로 입력해 주세요.');
+        }
+
         $oModel   = getModel('triplepopup');
         $existing = $oModel->getPopupItem($slot_number);
 
@@ -318,8 +336,11 @@ class triplepopupAdminController extends triplepopup
         $args->html_position   = (Context::get('html_position') === 'overlay') ? 'overlay' : 'top';
         $args->html_bg_color   = $this->_normalizeColor(Context::get('html_bg_color'), '#ffffff');
         $args->html_bg_trans   = max(0, min(100, (int)Context::get('html_bg_trans')));
+        $args->border_width    = max(0, min(20, (int)Context::get('border_width')));
+        $args->border_color    = $this->_normalizeColor(Context::get('border_color'), '#ffaa56');
         $args->source_document_srl = $sourceSrl;
         $args->target_groups   = implode(',', $targetGroups);
+        $args->target_modules  = implode(',', $targetModules);
         $args->click_url       = $this->_normalizeUrl(Context::get('click_url'));
         $args->click_target    = (Context::get('click_target') === 'self') ? 'self' : 'blank';
         $args->footer_text     = $this->_normalizeLangText(Context::get('footer_text'));

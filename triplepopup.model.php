@@ -101,8 +101,15 @@ class triplepopupModel extends triplepopup
         return $order;
     }
 
-    function getPopupItemList()
+    /**
+     * 현재 페이지에 노출할 배너 목록.
+     * $moduleSrl: 현재 페이지의 모듈 번호, $mid: 현재 페이지의 mid (null 이면 페이지 정보를 모르는 요청이므로 동작 모듈설정 필터를 건너뜀 — 노출 여부는 트리거에서 이미 판단)
+     * - 배너에 '노출 모듈'이 직접 입력되어 있으면 해당 모듈 번호에서만 노출 (동작 모듈설정보다 우선)
+     * - 비어 있으면 동작 모듈설정(대상 mid)을 따름 (대상 미지정이면 전체 노출)
+     */
+    function getPopupItemList($moduleSrl = 0, $mid = null)
     {
+        $targetMids = $this->getPopupConfig()->target_mids;
         $args = new stdClass();
         $args->is_active = 'Y';
         $output = executeQueryArray('triplepopup.getPopupItemList', $args);
@@ -127,6 +134,15 @@ class triplepopupModel extends triplepopup
             $targetGroups = $this->_splitTargetGroups(isset($item->target_groups) ? $item->target_groups : '');
             unset($item->target_groups);
             if (!empty($targetGroups) && !array_intersect($targetGroups, $viewerGroups)) continue;
+
+            // 노출 모듈 필터: 배너에 직접 입력한 모듈 번호가 있으면 그 모듈에서만, 없으면 동작 모듈설정(대상 mid)을 따른다
+            $targetModules = $this->_splitTargetModules(isset($item->target_modules) ? $item->target_modules : '');
+            unset($item->target_modules);
+            if (!empty($targetModules)) {
+                if (!in_array((string)(int)$moduleSrl, $targetModules, true)) continue;
+            } elseif (!empty($targetMids) && $mid !== null && ($mid === '' || !in_array((string)$mid, $targetMids, true))) {
+                continue;
+            }
 
             // 기본 배경이미지 선택 시 해당 이미지 사용 (업로드 이미지보다 우선, 언어별 이미지보다는 후순위)
             if (!empty($item->body_preset)) $item->body_image = $this->getPresetImageUrl($item->body_preset);
@@ -228,6 +244,12 @@ class triplepopupModel extends triplepopup
             $groupChoices[] = $choice;
         }
 
+        // 노출 모듈 번호 → 모듈 이름 (관리자 입력란 안내용)
+        $moduleNames = array();
+        foreach ((array)getModel('module')->getMidList() as $mid => $info) {
+            $moduleNames[(int)$info->module_srl] = (isset($info->browser_title) && trim((string)$info->browser_title) !== '' ? trim((string)$info->browser_title) : $mid) . ' (' . $mid . ')';
+        }
+
         for ($i = 1; $i <= 6; $i++) {
             if (isset($map[$i]) && $map[$i]) {
                 $slot = $map[$i];
@@ -249,6 +271,7 @@ class triplepopupModel extends triplepopup
                 $slot->body_preset     = 0;
                 $slot->source_document_srl = '';
                 $slot->target_groups   = '';
+                $slot->target_modules  = '';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
                 $slot->footer_text     = '';
@@ -271,6 +294,9 @@ class triplepopupModel extends triplepopup
             if (!isset($slot->html_position) || $slot->html_position !== 'overlay') $slot->html_position = 'top';
             if (!isset($slot->html_bg_color) || $slot->html_bg_color === '') $slot->html_bg_color = '#ffffff';
             $slot->html_bg_trans = isset($slot->html_bg_trans) ? max(0, min(100, (int)$slot->html_bg_trans)) : 0;
+            // 배너 테두리 (굵기 0 = 없음, 색상 기본 #ffaa56)
+            $slot->border_width = isset($slot->border_width) ? max(0, min(20, (int)$slot->border_width)) : 0;
+            if (!isset($slot->border_color) || $slot->border_color === '') $slot->border_color = '#ffaa56';
 
             // 기본 배경이미지 목록·선택값 (관리자용)
             $slot->body_preset = isset($slot->body_preset) ? max(0, min(6, (int)$slot->body_preset)) : 0;
@@ -295,6 +321,15 @@ class triplepopupModel extends triplepopup
                 $row->checked = in_array($row->value, $pickedGroups, true);
                 $slot->groups[] = $row;
             }
+
+            // 노출 모듈(직접 입력한 모듈 번호): 입력란 표시값과 번호별 모듈 이름 (비어 있으면 동작 모듈설정을 따름)
+            $pickedModules = $this->_splitTargetModules(isset($slot->target_modules) ? $slot->target_modules : '');
+            $slot->target_modules = implode(', ', $pickedModules);
+            $slot->target_module_names = array();
+            foreach ($pickedModules as $srl) {
+                $slot->target_module_names[] = $srl . ' ' . (isset($moduleNames[(int)$srl]) ? $moduleNames[(int)$srl] : '(없는 모듈)');
+            }
+            $slot->target_module_names = implode(' · ', $slot->target_module_names);
 
             // 언어별 이미지 목록 (관리자 탭용)
             $lang_images = $this->decodeLangImages(isset($slot->body_images) ? $slot->body_images : '');
@@ -347,6 +382,12 @@ class triplepopupModel extends triplepopup
     function _splitTargetGroups($value)
     {
         return array_values(array_filter(explode(',', (string)$value), 'strlen'));
+    }
+
+    /** '457996,457997' 형태의 저장값 → 모듈 번호 배열 (빈 값이면 빈 배열 = 동작 모듈설정을 따름) */
+    function _splitTargetModules($value)
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string)$value)), 'ctype_digit'));
     }
 
     function _toDateInput($ymd)

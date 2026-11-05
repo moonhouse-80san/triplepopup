@@ -4,6 +4,7 @@
     var COOKIE_NAME = 'rx_popup_hidden';
     var apiUrl = window.TRIPLEPOPUP_API || '/index.php?module=triplepopup&act=getTriplepopupData';
     var GAP    = 20;
+    var XPAD   = 14; // X 버튼이 카드 모서리 밖으로 걸치는 만큼 뷰포트 위·오른쪽에 둘 여백(px, GAP 보다 작게)
 
     function getCookie(name) {
         var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -88,7 +89,7 @@
         track.style.gap = GAP + 'px';
 
         for (var i = 0; i < count; i++) {
-            track.appendChild(buildCard(items[i], layout.cardW, 480 / 420, function () { syncHeights(); }));
+            track.appendChild(buildCard(items[i], layout.cardW, 480 / 420, function () { syncHeights(); }, function (c) { removeCard(c); }));
         }
         viewport.appendChild(track);
         stage.appendChild(viewport);
@@ -138,7 +139,7 @@
                 if (media) media.style.height = '';
                 if (cards[i].offsetHeight > maxH) maxH = cards[i].offsetHeight;
             }
-            if (maxH > 0) viewport.style.height = maxH + 'px';
+            if (maxH > 0) viewport.style.height = (maxH + XPAD) + 'px';
         }
 
         function applyLayout() {
@@ -146,7 +147,7 @@
             var vwTotal = layout.cardW * layout.visible + GAP * (layout.visible - 1);
 
             stage.style.width     = vwTotal + 'px';
-            viewport.style.width   = vwTotal + 'px';
+            viewport.style.width   = (vwTotal + XPAD) + 'px';
             track.style.width      = (layout.cardW * count + GAP * (count - 1)) + 'px';
             bottom.style.width     = vwTotal + 'px';
 
@@ -164,6 +165,20 @@
             nextBtn.style.display = hasOverflow ? 'flex' : 'none';
 
             moveTo(currentIndex, false);
+        }
+
+        // 개별 배너 닫기(X): 해당 카드만 제거하고 남은 카드로 다시 배치, 전부 닫히면 팝업 종료
+        function removeCard(card) {
+            var cell = card.parentNode; // 카드 + X 버튼을 감싼 래퍼
+            if (cell && cell.parentNode) cell.parentNode.removeChild(cell);
+            count--;
+            if (count < 1) {
+                clearInterval(slideTimer);
+                overlay.parentNode && overlay.parentNode.removeChild(overlay);
+                return;
+            }
+            applyLayout();
+            restartTimer();
         }
 
         function maxIndex() { return Math.max(0, count - layout.visible); }
@@ -211,11 +226,17 @@
         });
     }
 
-    function buildCard(item, w, baseRatio, onImgLoad) {
+    function buildCard(item, w, baseRatio, onImgLoad, onClose) {
         var card = document.createElement('div');
         card.className    = 'triplepopup-pop-card';
         card.style.width    = w + 'px';
         card.style.minWidth = w + 'px';
+
+        // 배너 테두리 (굵기 0 = 없음, 색상은 #rgb / #rrggbb 만 허용)
+        var borderW = Math.max(0, Math.min(20, parseInt(item.border_width, 10) || 0));
+        if (borderW > 0 && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(item.border_color || '')) {
+            card.style.border = borderW + 'px solid ' + item.border_color;
+        }
 
         // 본문 배경색 (기본 #ffffff)
         var htmlBg    = item.html_bg_color || '#ffffff';
@@ -359,6 +380,25 @@
                 footer.addEventListener('click', makeOpener(item.click_url, item.click_target));
             }
             card.appendChild(footer);
+        }
+
+        // 우측 상단 X 버튼 — 이 배너만 닫기
+        if (typeof onClose === 'function') {
+            var xBtn = document.createElement('button');
+            xBtn.type = 'button';
+            xBtn.className = 'triplepopup-pop-card-close';
+            xBtn.setAttribute('aria-label', '이 배너 닫기');
+            xBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
+            xBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                onClose(card);
+            });
+            // 카드는 overflow:hidden 이라 버튼이 밖으로 나가지 못하므로, 카드와 버튼을 같은 래퍼에 나란히 둔다
+            var cell = document.createElement('div');
+            cell.className = 'triplepopup-pop-cell';
+            cell.appendChild(card);
+            cell.appendChild(xBtn);
+            return cell;
         }
 
         return card;

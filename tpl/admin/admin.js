@@ -91,6 +91,37 @@
             }
         });
 
+        /* ---------- 배너 테두리 색상: 색상표 ↔ #hex 직접 입력 동기화 ---------- */
+        function expandHex(v) {
+            v = (v || '').trim();
+            if (v.charAt(0) !== '#') v = '#' + v;
+            if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2) + v.charAt(3) + v.charAt(3);
+            return /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : '';
+        }
+
+        root.addEventListener('input', function (e) {
+            var wrap = e.target && e.target.closest ? e.target.closest('.triplepopup-hexcolor') : null;
+            if (!wrap) return;
+            var picker = wrap.querySelector('input[type="color"]');
+            var text   = wrap.querySelector('input[type="text"]');
+            if (e.target === picker) {
+                text.value = picker.value;
+                text.dispatchEvent(new Event('input', { bubbles: true })); // 미리보기 갱신
+            } else if (e.target === text && expandHex(text.value)) {
+                picker.value = expandHex(text.value);
+            }
+        });
+
+        // 입력을 마치면 #없이 쓴 값·3자리 값을 보정하고, 잘못된 값은 색상표의 현재 색으로 되돌린다
+        root.addEventListener('change', function (e) {
+            var wrap = e.target && e.target.closest ? e.target.closest('.triplepopup-hexcolor') : null;
+            var text = wrap ? wrap.querySelector('input[type="text"]') : null;
+            if (!text || e.target !== text) return;
+            var before = text.value;
+            text.value = expandHex(text.value) || wrap.querySelector('input[type="color"]').value;
+            if (text.value !== before) text.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
         // 목록의 상태 배지 클릭 → 활성/비활성 전환 (완료 후 새로고침해 예정·종료 상태까지 다시 계산)
         root.addEventListener('click', function (e) {
             var pill = e.target.closest ? e.target.closest('.triplepopup-pill-toggle') : null;
@@ -188,6 +219,11 @@
             card.style.background = /^[0-9a-fA-F]{6}$/.test(hx)
                 ? 'rgba(' + parseInt(hx.substr(0, 2), 16) + ',' + parseInt(hx.substr(2, 2), 16) + ',' + parseInt(hx.substr(4, 2), 16) + ',' + (1 - htmlTrans / 100) + ')'
                 : '#ffffff';
+
+            // 배너 테두리: 굵기 0 이거나 색상이 올바르지 않으면 미리보기 기본 테두리 유지
+            var bdW = Math.max(0, Math.min(20, parseInt(fieldVal(form, 'border_width'), 10) || 0));
+            var bdC = fieldVal(form, 'border_color').trim();
+            card.style.border = (bdW > 0 && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(bdC)) ? bdW + 'px solid ' + bdC : '';
 
             // 이미지·머리말·타이틀 없이 글만 있으면 실제 팝업처럼 이미지 영역 없이 텍스트 카드로 표시
             var pvImg  = card.querySelector('.triplepopup-pv-img');
