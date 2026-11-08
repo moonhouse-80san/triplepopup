@@ -172,7 +172,13 @@
                                     </div>
                                 </div>
                                 <div class="triplepopup-field">
-                                    <label>하단 버튼 문구 <span class="triplepopup-lang-tag">다국어</span></label>
+                                    <div class="triplepopup-label-row">
+                                        <label>하단 버튼 문구 <span class="triplepopup-lang-tag">다국어</span></label>
+                                        <span class="triplepopup-radios" role="group" aria-label="하단 로그인 옵션">
+                                            <label class="triplepopup-radio"><input type="checkbox" name="footer_login" value="Y" <!--@if($slot->footer_login === 'Y')-->checked="checked"<!--@end--> /> 로그인</label>
+                                            <label class="triplepopup-radio"><input type="checkbox" name="footer_sns" value="Y" <!--@if($slot->footer_sns === 'Y')-->checked="checked"<!--@end--> /> SNS 로그인</label>
+                                        </span>
+                                    </div>
                                     <div class="triplepopup-inputwrap">
                                         <input type="text" name="footer_text" value="{escape($slot->footer_text)}" class="triplepopup-input-flush lang_code x_full-width" data-lang-display="{escape($slot->footer_text_display)}" placeholder="예약하기, 자세히 보기 ..." />
                                         <span class="triplepopup-swatch-cap">글자</span>
@@ -180,6 +186,7 @@
                                         <span class="triplepopup-swatch-cap">배경</span>
                                         <span class="triplepopup-swatch"><input type="color" name="footer_bg_color" value="{$slot->footer_bg_color}" title="하단 버튼 배경색" /></span>
                                     </div>
+                                    <p class="triplepopup-hint triplepopup-login-note" <!--@if($slot->footer_login !== 'Y' && $slot->footer_sns !== 'Y')-->hidden="hidden"<!--@end-->>로그인과 SNS 로그인은 따로 선택할 수 있으며, 하단 버튼 바로 위에 표시됩니다. 로그인: 아이디·비밀번호 입력란과 '로그인'·'회원가입' 버튼(버튼 색상은 위 글자·배경색을 따름). SNS 로그인: 카카오·구글 (zzan_snslogin 모듈 필요). 두 영역의 위쪽에는 배너 테두리 설정이 적용되며, 이미 로그인한 회원에게는 표시되지 않습니다.</p>
                                     <div class="triplepopup-presets" data-target="footer_bg_color">
                                         <span class="triplepopup-presets-label">배경</span>
                                         <button type="button" class="triplepopup-chip" data-color="#FFB3B3" title="빨강" aria-label="빨강" style="--chip:#FFB3B3"></button>
@@ -293,6 +300,8 @@
                                                 </div>
                                                 <div class="triplepopup-pv-html triplepopup-pv-html-overlay" hidden="hidden"></div>
                                             </div>
+                                            <div class="triplepopup-pv-login" hidden="hidden"><span class="triplepopup-pv-login-in">아이디</span><span class="triplepopup-pv-login-in">비밀번호</span><span class="triplepopup-pv-login-btn" style="background:{$slot->footer_bg_color};color:{$slot->footer_text_color}">로그인 · 회원가입</span></div>
+                                            <div class="triplepopup-pv-sns" hidden="hidden">SNS 로그인</div>
                                             <div class="triplepopup-pv-footer" style="background:{$slot->footer_bg_color};color:{$slot->footer_text_color}" hidden="hidden"></div>
                                         </div>
                                     </div>
@@ -344,6 +353,24 @@
                                         <span class="triplepopup-swatch"><input type="color" value="{escape($slot->border_color)}" title="테두리 색상 선택" /></span>
                                     </div>
                                     <p class="triplepopup-hint">오른쪽 색상표로 고르거나 <b>#ffffff</b> 처럼 직접 입력합니다. (기본 #ffaa56)</p>
+                                </div>
+
+                                <div class="triplepopup-field">
+                                    <label>배너 그림자</label>
+                                    <select name="card_shadow" class="triplepopup-select">
+                                        <option value="N" <!--@if($slot->card_shadow !== 'Y')-->selected="selected"<!--@end-->>숨김 (기본)</option>
+                                        <option value="Y" <!--@if($slot->card_shadow === 'Y')-->selected="selected"<!--@end-->>표시</option>
+                                    </select>
+                                    <p class="triplepopup-hint">배너 카드 가장자리의 그림자입니다. 기본은 숨김이며, 카드에 입체감을 주고 싶을 때 <b>표시</b>로 바꾸세요.</p>
+                                </div>
+
+                                <div class="triplepopup-field">
+                                    <label>배경 어둡기</label>
+                                    <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix">
+                                        <input type="range" name="overlay_dim" value="{$slot->overlay_dim}" min="0" max="100" step="2" class="triplepopup-range" title="팝업 뒤 전체 화면 배경 어둡기" />
+                                        <span class="triplepopup-suffix triplepopup-range-out">{$slot->overlay_dim}%</span>
+                                    </div>
+                                    <p class="triplepopup-hint">이 배너가 보일 때 팝업 뒤 전체 화면의 회색빛 정도입니다. <b>0 = 완전 투명, 100 = 검정</b>, 기본 42. 여러 배너가 함께 보이면 그중 <b>가장 높은 값</b>이 적용됩니다. 0이면 배경 흐림 효과도 꺼집니다.</p>
                                 </div>
 
                                 <div class="triplepopup-field triplepopup-field-full">

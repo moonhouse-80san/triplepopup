@@ -14,6 +14,8 @@
     <column name="html_bg_trans"   type="tinyint"  size="3"   default="0" />
     <column name="border_width"    type="tinyint"  size="3"   default="0" />
     <column name="border_color"    type="varchar"  size="20"  default="#ffaa56" />
+    <column name="card_shadow"     type="char"     size="1"   default="N" />
+    <column name="overlay_dim"     type="tinyint"  size="3"   default="42" />
     <column name="body_preset"     type="tinyint"  size="1"   default="0" />
     <column name="source_document_srl" type="bigint" size="11" />
     <column name="target_groups"   type="text" />
@@ -23,6 +25,8 @@
     <column name="footer_text"     type="varchar"  size="200" />
     <column name="footer_bg_color" type="varchar"  size="20"  default="#0071e3" />
     <column name="footer_text_color" type="varchar"  size="20"  default="#ffffff" />
+    <column name="footer_login"    type="char"     size="1"   default="N" />
+    <column name="footer_sns"      type="char"     size="1"   default="N" />
     <column name="start_date"      type="varchar"  size="8" />
     <column name="end_date"        type="varchar"  size="8" />
     <column name="is_active"       type="char"     size="1"   default="Y" />

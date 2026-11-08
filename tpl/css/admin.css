@@ -1649,3 +1649,63 @@
 .triplepopup-admin .triplepopup-spin-btn:hover { background: var(--tpop-accent-soft); color: var(--tpop-accent); }
 .triplepopup-admin .triplepopup-spin-btn:active { background: var(--tpop-accent-ring); }
 .triplepopup-admin .triplepopup-spin-btn svg { width: 10px; height: 10px; pointer-events: none; }
+
+/* ---------- 하단 버튼 문구 + 동작 선택(링크 버튼 / 로그인) ---------- */
+.triplepopup-admin .triplepopup-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tpop-sp-3);
+    margin-bottom: var(--tpop-sp-2);
+}
+.triplepopup-admin .triplepopup-label-row > label {
+    display: block;
+    margin: 0;
+    font-size: var(--tpop-fs-3);
+    font-weight: 600;
+    line-height: var(--tpop-lh-snug);
+    letter-spacing: var(--tpop-ls-3);
+    color: var(--tpop-text);
+}
+.triplepopup-admin .triplepopup-radios { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.triplepopup-admin .triplepopup-label-row > .triplepopup-radios > label.triplepopup-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    font-size: var(--tpop-fs-2);
+    font-weight: 500;
+    color: var(--tpop-text-sub);
+    cursor: pointer;
+}
+.triplepopup-admin .triplepopup-radio input[type="radio"] { width: auto; height: auto; margin: 0; accent-color: var(--tpop-accent); }
+.triplepopup-admin .triplepopup-pv-login { display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; background: #fff; }
+.triplepopup-admin .triplepopup-pv-login-in {
+    height: 22px;
+    padding: 0 8px;
+    border: var(--tpop-bw) solid var(--tpop-line);
+    border-radius: 5px;
+    line-height: 20px;
+    font-size: var(--tpop-fs-1);
+    color: var(--tpop-muted);
+}
+
+.triplepopup-admin .triplepopup-pv-login-btn {
+    height: 24px;
+    border-radius: 5px;
+    line-height: 24px;
+    text-align: center;
+    font-size: var(--tpop-fs-1);
+    font-weight: 600;
+}
+
+.triplepopup-admin .triplepopup-pv-sns {
+    padding: 8px 10px;
+    background: #fff;
+    text-align: center;
+    font-size: var(--tpop-fs-1);
+    font-weight: 600;
+    color: var(--tpop-text-sub);
+}
+.triplepopup-admin .triplepopup-pv-login:not([hidden]) + .triplepopup-pv-sns { border-top: var(--tpop-bw) dashed var(--tpop-line); }
+.triplepopup-admin .triplepopup-radio input[type="checkbox"] { width: auto; height: auto; margin: 0; accent-color: var(--tpop-accent); }

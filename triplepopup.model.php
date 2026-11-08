@@ -160,6 +160,11 @@ class triplepopupModel extends triplepopup
             foreach ($this->getLangFields() as $f) {
                 if (isset($item->{$f})) $item->{$f} = $this->resolveLangText($item->{$f});
             }
+            // 하단 로그인·SNS 로그인: 이미 로그인한 회원에게는 보여주지 않음 (하단 버튼은 그대로 표시)
+            if ($memberSrl) {
+                $item->footer_login = 'N';
+                $item->footer_sns   = 'N';
+            }
             // 게시글 가져오기: 연결된 글이 공개 상태이고 현재 방문자가 열람 가능하면 글 내용으로 본문을 대체 (실시간 반영)
             if (!empty($item->source_document_srl)) {
                 $oDocument = \DocumentModel::getDocument((int)$item->source_document_srl, false, false);
@@ -268,6 +273,8 @@ class triplepopupModel extends triplepopup
                 $slot->html_position   = 'top';
                 $slot->html_bg_color   = '#ffffff';
                 $slot->html_bg_trans   = 0;
+                $slot->card_shadow     = 'N';
+                $slot->overlay_dim     = 42;
                 $slot->body_preset     = 0;
                 $slot->source_document_srl = '';
                 $slot->target_groups   = '';
@@ -277,6 +284,8 @@ class triplepopupModel extends triplepopup
                 $slot->footer_text     = '';
                 $slot->footer_bg_color = '#0071e3';
                 $slot->footer_text_color = '#ffffff';
+                $slot->footer_login    = 'N';
+                $slot->footer_sns      = 'N';
                 $slot->start_date      = '';
                 $slot->end_date        = '';
                 $slot->is_active       = 'Y';
@@ -289,6 +298,8 @@ class triplepopupModel extends triplepopup
             // 색상 기본값 보강 (마이그레이션 이전 행 대비)
             if (!isset($slot->badge_text_color)  || $slot->badge_text_color  === '') $slot->badge_text_color  = '#ffffff';
             if (!isset($slot->footer_text_color) || $slot->footer_text_color === '') $slot->footer_text_color = '#ffffff';
+            $slot->footer_login = (isset($slot->footer_login) && $slot->footer_login === 'Y') ? 'Y' : 'N';
+            $slot->footer_sns   = (isset($slot->footer_sns) && $slot->footer_sns === 'Y') ? 'Y' : 'N';
             if (!isset($slot->click_target) || $slot->click_target === '') $slot->click_target = 'blank';
             if (!isset($slot->html_content)) $slot->html_content = '';
             if (!isset($slot->html_position) || $slot->html_position !== 'overlay') $slot->html_position = 'top';
@@ -297,6 +308,10 @@ class triplepopupModel extends triplepopup
             // 배너 테두리 (굵기 0 = 없음, 색상 기본 #ffaa56)
             $slot->border_width = isset($slot->border_width) ? max(0, min(20, (int)$slot->border_width)) : 0;
             if (!isset($slot->border_color) || $slot->border_color === '') $slot->border_color = '#ffaa56';
+            // 배너 그림자 (기본 N = 숨김, Y = 표시)
+            $slot->card_shadow = (isset($slot->card_shadow) && $slot->card_shadow === 'Y') ? 'Y' : 'N';
+            // 배경 어둡기 (0~100%, 기본 42 = 기존 투명도). 0 도 유효한 값이라 empty() 를 쓰지 않는다
+            $slot->overlay_dim = (isset($slot->overlay_dim) && $slot->overlay_dim !== '') ? max(0, min(100, (int)$slot->overlay_dim)) : 42;
 
             // 기본 배경이미지 목록·선택값 (관리자용)
             $slot->body_preset = isset($slot->body_preset) ? max(0, min(6, (int)$slot->body_preset)) : 0;

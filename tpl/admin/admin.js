@@ -91,6 +91,13 @@
             }
         });
 
+        /* ---------- 배경 어둡기 슬라이더: 퍼센트 표시 갱신 ---------- */
+        root.addEventListener('input', function (e) {
+            if (!e.target || e.target.name !== 'overlay_dim') return;
+            var out = e.target.parentNode ? e.target.parentNode.querySelector('.triplepopup-range-out') : null;
+            if (out) out.textContent = e.target.value + '%';
+        });
+
         /* ---------- 배너 테두리 색상: 색상표 ↔ #hex 직접 입력 동기화 ---------- */
         function expandHex(v) {
             v = (v || '').trim();
@@ -212,7 +219,8 @@
 
             // 본문 배경색: 카드 전체에 적용 (이미지가 있어도 텍스트 영역 배경으로 사용)
             var htmlTrans = Math.max(0, Math.min(100, parseInt(fieldVal(form, 'html_bg_trans'), 10) || 0));
-            var transOut  = form.querySelector('.triplepopup-range-out');
+            var transIn   = form.querySelector('[name="html_bg_trans"]');
+            var transOut  = transIn && transIn.parentNode ? transIn.parentNode.querySelector('.triplepopup-range-out') : null;
             if (transOut) transOut.textContent = htmlTrans + '%';
             var hx = htmlBg.replace('#', '');
             if (hx.length === 3) hx = hx.charAt(0) + hx.charAt(0) + hx.charAt(1) + hx.charAt(1) + hx.charAt(2) + hx.charAt(2);
@@ -225,6 +233,9 @@
             var bdC = fieldVal(form, 'border_color').trim();
             card.style.border = (bdW > 0 && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(bdC)) ? bdW + 'px solid ' + bdC : '';
 
+            // 배너 그림자: 숨김이면 미리보기 카드에서도 제거
+            card.style.boxShadow = (fieldVal(form, 'card_shadow') === 'Y') ? '' : 'none';
+
             // 이미지·머리말·타이틀 없이 글만 있으면 실제 팝업처럼 이미지 영역 없이 텍스트 카드로 표시
             var pvImg  = card.querySelector('.triplepopup-pv-img');
             var hasImg = !!(pvImg && !pvImg.hidden && pvImg.getAttribute('src'));
@@ -234,6 +245,24 @@
                 if (badge.trim()) { elBadge.textContent = badge; elBadge.style.background = badgeBg; elBadge.style.color = badgeFg; elBadge.hidden = false; }
                 else { elBadge.hidden = true; }
             }
+            // 하단 로그인 / SNS 로그인: 각각 따로 선택 — 미리보기에 해당 영역을 표시하고, 맨 위 영역에는 배너 테두리를 적용
+            var loginOn = !!form.querySelector('[name="footer_login"]:checked');
+            var snsOn   = !!form.querySelector('[name="footer_sns"]:checked');
+            var elLogin = card.querySelector('.triplepopup-pv-login');
+            var elSns   = card.querySelector('.triplepopup-pv-sns');
+            var elNote  = form.querySelector('.triplepopup-login-note');
+            var topLine = (bdW > 0 && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(bdC)) ? bdW + 'px solid ' + bdC : '';
+            if (elLogin) {
+                elLogin.hidden = !loginOn;
+                elLogin.style.borderTop = topLine;
+                var elLoginBtn = elLogin.querySelector('.triplepopup-pv-login-btn');
+                if (elLoginBtn) { elLoginBtn.style.background = footerBg; elLoginBtn.style.color = footerFg; }
+            }
+            if (elSns) {
+                elSns.hidden = !snsOn;
+                elSns.style.borderTop = loginOn ? '' : topLine;
+            }
+            if (elNote) elNote.hidden = !(loginOn || snsOn);
             if (elFooter) {
                 if (footer.trim()) { elFooter.textContent = footer; elFooter.style.background = footerBg; elFooter.style.color = footerFg; elFooter.hidden = false; }
                 else { elFooter.hidden = true; }

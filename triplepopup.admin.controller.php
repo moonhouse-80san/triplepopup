@@ -338,6 +338,10 @@ class triplepopupAdminController extends triplepopup
         $args->html_bg_trans   = max(0, min(100, (int)Context::get('html_bg_trans')));
         $args->border_width    = max(0, min(20, (int)Context::get('border_width')));
         $args->border_color    = $this->_normalizeColor(Context::get('border_color'), '#ffaa56');
+        $args->card_shadow     = (Context::get('card_shadow') === 'Y') ? 'Y' : 'N';
+        // 배경 어둡기: 0~100% (기본 42)
+        $dim = Context::get('overlay_dim');
+        $args->overlay_dim     = ($dim === null || $dim === '') ? 42 : max(0, min(100, (int)$dim));
         $args->source_document_srl = $sourceSrl;
         $args->target_groups   = implode(',', $targetGroups);
         $args->target_modules  = implode(',', $targetModules);
@@ -346,6 +350,8 @@ class triplepopupAdminController extends triplepopup
         $args->footer_text     = $this->_normalizeLangText(Context::get('footer_text'));
         $args->footer_bg_color = $this->_normalizeColor(Context::get('footer_bg_color'));
         $args->footer_text_color = $this->_normalizeColor(Context::get('footer_text_color'), '#ffffff');
+        $args->footer_login    = (Context::get('footer_login') === 'Y') ? 'Y' : 'N';
+        $args->footer_sns      = (Context::get('footer_sns') === 'Y') ? 'Y' : 'N';
         $args->start_date      = $this->_normalizeDate(Context::get('start_date'));
         $args->end_date        = $this->_normalizeDate(Context::get('end_date'));
         $args->is_active       = Context::get('is_active') === 'Y' ? 'Y' : 'N';

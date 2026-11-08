@@ -16,6 +16,8 @@
         <column name="html_bg_trans"   var="html_bg_trans" />
         <column name="border_width"    var="border_width" />
         <column name="border_color"    var="border_color" />
+        <column name="card_shadow"     var="card_shadow" />
+        <column name="overlay_dim"     var="overlay_dim"     force="force" />
         <column name="body_preset"     var="body_preset" />
         <column name="source_document_srl" var="source_document_srl" />
         <column name="target_groups"   var="target_groups" />
@@ -25,6 +27,8 @@
         <column name="footer_text"     var="footer_text" />
         <column name="footer_bg_color" var="footer_bg_color" />
         <column name="footer_text_color" var="footer_text_color" />
+        <column name="footer_login"    var="footer_login" />
+        <column name="footer_sns"      var="footer_sns" />
         <column name="start_date"      var="start_date" />
         <column name="end_date"        var="end_date" />
         <column name="is_active"       var="is_active" />

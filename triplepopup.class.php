@@ -79,7 +79,19 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'card_shadow')) {
+            return true;
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'overlay_dim')) {
+            return true;
+        }
         if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
+            return true;
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_login')) {
+            return true;
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
             return true;
         }
         if (!$this->_isTriggerRegistered()) {
@@ -145,8 +157,20 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
             $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'card_shadow')) {
+            $oDB->addColumn('triplepopup_slots', 'card_shadow', 'char', 1, 'N');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'overlay_dim')) {
+            $oDB->addColumn('triplepopup_slots', 'overlay_dim', 'tinyint', 3, 42);
+        }
         if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
             $oDB->addColumn('triplepopup_slots', 'target_modules', 'text');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_login')) {
+            $oDB->addColumn('triplepopup_slots', 'footer_login', 'char', 1, 'N');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
+            $oDB->addColumn('triplepopup_slots', 'footer_sns', 'char', 1, 'N');
         }
         if (!$this->_isTriggerRegistered()) {
             $this->_registerTrigger();
@@ -223,8 +247,20 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
             $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'card_shadow')) {
+            $oDB->addColumn('triplepopup_slots', 'card_shadow', 'char', 1, 'N');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'overlay_dim')) {
+            $oDB->addColumn('triplepopup_slots', 'overlay_dim', 'tinyint', 3, 42);
+        }
         if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
             $oDB->addColumn('triplepopup_slots', 'target_modules', 'text');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_login')) {
+            $oDB->addColumn('triplepopup_slots', 'footer_login', 'char', 1, 'N');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
+            $oDB->addColumn('triplepopup_slots', 'footer_sns', 'char', 1, 'N');
         }
     }
 
