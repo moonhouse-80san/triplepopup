@@ -27,6 +27,7 @@
     <column name="footer_text_color" type="varchar"  size="20"  default="#ffffff" />
     <column name="footer_login"    type="char"     size="1"   default="N" />
     <column name="footer_sns"      type="char"     size="1"   default="N" />
+    <column name="hide_on_document" type="char"    size="1"   default="N" />
     <column name="start_date"      type="varchar"  size="8" />
     <column name="end_date"        type="varchar"  size="8" />
     <column name="is_active"       type="char"     size="1"   default="Y" />

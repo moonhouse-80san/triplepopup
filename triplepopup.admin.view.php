@@ -21,6 +21,9 @@ class triplepopupAdminView extends triplepopup
         $oModel = getModel('triplepopup');
         Context::set('config', $oModel->getPopupConfig());
         $slots = $oModel->getSlotList();
+        // ZZAN 소셜 로그인 모듈이 없으면 SNS 로그인 옵션을 숨기고 미리보기에도 나오지 않게 함
+        $snsInstalled = $oModel->isSnsLoginInstalled();
+        Context::set('snsInstalled', $snsInstalled);
         // 슬롯별 라이믹스 에디터 (에디터 컴포넌트 포함) — 입력값은 폼의 html_content 필드와 자동 동기화됨
         $oEditorModel = getModel('editor');
         foreach ($slots as $slot) {
@@ -35,6 +38,7 @@ class triplepopupAdminView extends triplepopup
             $option->enable_default_component = true;
             $option->editor_toolbar_hide = true; // 도구 상자는 처음에 접힌 상태
             $slot->editor_html = $oEditorModel->getEditor(0, $option);
+            if (!$snsInstalled) $slot->footer_sns = 'N';
         }
         Context::set('slots', $slots);
         Context::set('modules', $oModel->getTargetModuleList());

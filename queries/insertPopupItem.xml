@@ -29,6 +29,7 @@
         <column name="footer_text_color" var="footer_text_color" />
         <column name="footer_login"    var="footer_login" />
         <column name="footer_sns"      var="footer_sns" />
+        <column name="hide_on_document" var="hide_on_document" />
         <column name="start_date"      var="start_date" />
         <column name="end_date"        var="end_date" />
         <column name="is_active"       var="is_active" />

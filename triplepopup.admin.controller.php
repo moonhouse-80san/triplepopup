@@ -351,7 +351,10 @@ class triplepopupAdminController extends triplepopup
         $args->footer_bg_color = $this->_normalizeColor(Context::get('footer_bg_color'));
         $args->footer_text_color = $this->_normalizeColor(Context::get('footer_text_color'), '#ffffff');
         $args->footer_login    = (Context::get('footer_login') === 'Y') ? 'Y' : 'N';
-        $args->footer_sns      = (Context::get('footer_sns') === 'Y') ? 'Y' : 'N';
+        $args->hide_on_document = (Context::get('hide_on_document') === 'Y') ? 'Y' : 'N';
+        $args->footer_sns      = $oModel->isSnsLoginInstalled()
+            ? ((Context::get('footer_sns') === 'Y') ? 'Y' : 'N')
+            : (($existing && $existing->footer_sns === 'Y') ? 'Y' : 'N');
         $args->start_date      = $this->_normalizeDate(Context::get('start_date'));
         $args->end_date        = $this->_normalizeDate(Context::get('end_date'));
         $args->is_active       = Context::get('is_active') === 'Y' ? 'Y' : 'N';

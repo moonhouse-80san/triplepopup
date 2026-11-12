@@ -94,6 +94,9 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'hide_on_document')) {
+            return true;
+        }
         if (!$this->_isTriggerRegistered()) {
             return true;
         }
@@ -171,6 +174,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
             $oDB->addColumn('triplepopup_slots', 'footer_sns', 'char', 1, 'N');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'hide_on_document')) {
+            $oDB->addColumn('triplepopup_slots', 'hide_on_document', 'char', 1, 'N');
         }
         if (!$this->_isTriggerRegistered()) {
             $this->_registerTrigger();
@@ -261,6 +267,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
             $oDB->addColumn('triplepopup_slots', 'footer_sns', 'char', 1, 'N');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'hide_on_document')) {
+            $oDB->addColumn('triplepopup_slots', 'hide_on_document', 'char', 1, 'N');
         }
     }
 

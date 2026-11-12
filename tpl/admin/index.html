@@ -176,7 +176,9 @@
                                         <label>하단 버튼 문구 <span class="triplepopup-lang-tag">다국어</span></label>
                                         <span class="triplepopup-radios" role="group" aria-label="하단 로그인 옵션">
                                             <label class="triplepopup-radio"><input type="checkbox" name="footer_login" value="Y" <!--@if($slot->footer_login === 'Y')-->checked="checked"<!--@end--> /> 로그인</label>
+                                            <!--@if($snsInstalled)-->
                                             <label class="triplepopup-radio"><input type="checkbox" name="footer_sns" value="Y" <!--@if($slot->footer_sns === 'Y')-->checked="checked"<!--@end--> /> SNS 로그인</label>
+                                            <!--@end-->
                                         </span>
                                     </div>
                                     <div class="triplepopup-inputwrap">
@@ -434,6 +436,7 @@
                                     <p class="triplepopup-hint">현재 지정된 모듈: <b>{escape($slot->target_module_names)}</b></p>
                                     <!--@end-->
                                     <p class="triplepopup-hint"><b>457996, 457997</b> 처럼 쉼표로 구분해 입력하면 <b>이 배너는 해당 모듈에서만</b> 노출되며, 아래 '동작 모듈설정'보다 우선합니다. 비워두면 '동작 모듈설정'의 대상 모듈을 따릅니다.</p>
+                                    <label class="triplepopup-radio"><input type="checkbox" name="hide_on_document" value="Y" <!--@if($slot->hide_on_document === 'Y')-->checked="checked"<!--@end--> /> 게시글 보기 화면에서는 팝업 출력 안 함 (목록 화면에서만 노출)</label>
                                 </div>
 
                                 <div class="triplepopup-field">

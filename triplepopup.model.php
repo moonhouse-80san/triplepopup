@@ -3,6 +3,19 @@ class triplepopupModel extends triplepopup
 {
     function init() {}
 
+    /**
+     * ZZAN 소셜 로그인(zzan_snslogin) 모듈 설치 여부.
+     * 팝업이 불러오는 위젯 스크립트(js/widget.js)까지 있어야 설치된 것으로 본다.
+     */
+    function isSnsLoginInstalled()
+    {
+        static $installed = null;
+        if ($installed === null) {
+            $installed = is_file(_XE_PATH_ . 'modules/zzan_snslogin/js/widget.js');
+        }
+        return $installed;
+    }
+
     function getPopupConfig()
     {
         $oModuleModel = getModel('module');
@@ -104,10 +117,11 @@ class triplepopupModel extends triplepopup
     /**
      * 현재 페이지에 노출할 배너 목록.
      * $moduleSrl: 현재 페이지의 모듈 번호, $mid: 현재 페이지의 mid (null 이면 페이지 정보를 모르는 요청이므로 동작 모듈설정 필터를 건너뜀 — 노출 여부는 트리거에서 이미 판단)
+     * $isDocument: 게시글(내용글) 보기 화면 여부 — true 이면 '게시글 보기 화면에서는 출력 안 함' 배너를 제외
      * - 배너에 '노출 모듈'이 직접 입력되어 있으면 해당 모듈 번호에서만 노출 (동작 모듈설정보다 우선)
      * - 비어 있으면 동작 모듈설정(대상 mid)을 따름 (대상 미지정이면 전체 노출)
      */
-    function getPopupItemList($moduleSrl = 0, $mid = null)
+    function getPopupItemList($moduleSrl = 0, $mid = null, $isDocument = false)
     {
         $targetMids = $this->getPopupConfig()->target_mids;
         $args = new stdClass();
@@ -134,6 +148,10 @@ class triplepopupModel extends triplepopup
             $targetGroups = $this->_splitTargetGroups(isset($item->target_groups) ? $item->target_groups : '');
             unset($item->target_groups);
             if (!empty($targetGroups) && !array_intersect($targetGroups, $viewerGroups)) continue;
+
+            // 게시글 보기 화면에서는 출력 안 함으로 지정한 배너는 내용글 화면에서 제외 (목록 화면에서만 노출)
+            if ($isDocument && isset($item->hide_on_document) && $item->hide_on_document === 'Y') continue;
+            unset($item->hide_on_document);
 
             // 노출 모듈 필터: 배너에 직접 입력한 모듈 번호가 있으면 그 모듈에서만, 없으면 동작 모듈설정(대상 mid)을 따른다
             $targetModules = $this->_splitTargetModules(isset($item->target_modules) ? $item->target_modules : '');
@@ -164,6 +182,10 @@ class triplepopupModel extends triplepopup
             if ($memberSrl) {
                 $item->footer_login = 'N';
                 $item->footer_sns   = 'N';
+            }
+            // SNS 로그인: ZZAN 소셜 로그인 모듈이 설치되어 있지 않으면 출력하지 않음
+            if (!$this->isSnsLoginInstalled()) {
+                $item->footer_sns = 'N';
             }
             // 게시글 가져오기: 연결된 글이 공개 상태이고 현재 방문자가 열람 가능하면 글 내용으로 본문을 대체 (실시간 반영)
             if (!empty($item->source_document_srl)) {
@@ -279,6 +301,7 @@ class triplepopupModel extends triplepopup
                 $slot->source_document_srl = '';
                 $slot->target_groups   = '';
                 $slot->target_modules  = '';
+                $slot->hide_on_document = 'N';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
                 $slot->footer_text     = '';
@@ -299,6 +322,7 @@ class triplepopupModel extends triplepopup
             if (!isset($slot->badge_text_color)  || $slot->badge_text_color  === '') $slot->badge_text_color  = '#ffffff';
             if (!isset($slot->footer_text_color) || $slot->footer_text_color === '') $slot->footer_text_color = '#ffffff';
             $slot->footer_login = (isset($slot->footer_login) && $slot->footer_login === 'Y') ? 'Y' : 'N';
+            $slot->hide_on_document = (isset($slot->hide_on_document) && $slot->hide_on_document === 'Y') ? 'Y' : 'N';
             $slot->footer_sns   = (isset($slot->footer_sns) && $slot->footer_sns === 'Y') ? 'Y' : 'N';
             if (!isset($slot->click_target) || $slot->click_target === '') $slot->click_target = 'blank';
             if (!isset($slot->html_content)) $slot->html_content = '';
