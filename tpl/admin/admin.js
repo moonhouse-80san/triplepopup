@@ -55,7 +55,7 @@
             if (!presets) return;
             var target = presets.getAttribute('data-target');
             var field  = presets.closest ? presets.closest('.triplepopup-field') : null;
-            var input  = field ? field.querySelector('input[type="color"][name="' + target + '"]') : null;
+            var input  = field ? (field.querySelector('input[type="color"][name="' + target + '"]') || field.querySelector('input[type="text"][name="' + target + '"]')) : null;
             var cur    = input ? normHex(input.value) : '';
             var chips  = presets.querySelectorAll('.triplepopup-chip');
             for (var i = 0; i < chips.length; i++) {
@@ -74,7 +74,7 @@
             var presets = chip.closest('.triplepopup-presets');
             var field   = presets ? presets.closest('.triplepopup-field') : null;
             var target  = presets ? presets.getAttribute('data-target') : '';
-            var input   = field ? field.querySelector('input[type="color"][name="' + target + '"]') : null;
+            var input   = field ? (field.querySelector('input[type="color"][name="' + target + '"]') || field.querySelector('input[type="text"][name="' + target + '"]')) : null;
             if (input) {
                 input.value = chip.getAttribute('data-color');
                 try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (err) {}
@@ -84,11 +84,41 @@
 
         // 네이티브 피커로 직접 바꿨을 때도 칩 선택 상태 갱신
         root.addEventListener('input', function (e) {
-            if (e.target && e.target.type === 'color') {
+            if (e.target && (e.target.type === 'color' || (e.target.type === 'text' && e.target.name === 'border_color'))) {
                 var field   = e.target.closest ? e.target.closest('.triplepopup-field') : null;
                 var presets = field ? field.querySelector('.triplepopup-presets') : null;
                 if (presets) syncChips(presets);
             }
+        });
+
+        /* ---------- 머리말·하단 버튼 색상: HEX 직접 입력/붙여넣기 ↔ 색상표 동기화 ---------- */
+        function pickerOfMini(mini) {
+            var form = mini.form || (mini.closest ? mini.closest('form') : null);
+            return form ? form.querySelector('input[type="color"][name="' + mini.getAttribute('data-for') + '"]') : null;
+        }
+
+        root.addEventListener('input', function (e) {
+            var t = e.target;
+            if (!t || !t.classList) return;
+            if (t.classList.contains('triplepopup-hexmini')) {
+                var hex = expandHex(t.value);
+                var pk  = pickerOfMini(t);
+                if (hex && pk && pk.value !== hex) {
+                    pk.value = hex;
+                    try { pk.dispatchEvent(new Event('input', { bubbles: true })); } catch (err) {} // 미리보기·칩 갱신
+                }
+            } else if (t.type === 'color' && t.name) {
+                var form = t.form || (t.closest ? t.closest('form') : null);
+                var mini = form ? form.querySelector('.triplepopup-hexmini[data-for="' + t.name + '"]') : null;
+                if (mini && document.activeElement !== mini) mini.value = t.value;
+            }
+        });
+
+        root.addEventListener('change', function (e) {
+            var t = e.target;
+            if (!t || !t.classList || !t.classList.contains('triplepopup-hexmini')) return;
+            var pk = pickerOfMini(t);
+            t.value = expandHex(t.value) || (pk ? pk.value : '');
         });
 
         /* ---------- 배경 어둡기 슬라이더: 퍼센트 표시 갱신 ---------- */
@@ -116,6 +146,9 @@
                 text.dispatchEvent(new Event('input', { bubbles: true })); // 미리보기 갱신
             } else if (e.target === text && expandHex(text.value)) {
                 picker.value = expandHex(text.value);
+                var fld = wrap.closest('.triplepopup-field');
+                var pre = fld ? fld.querySelector('.triplepopup-presets') : null;
+                if (pre) syncChips(pre);
             }
         });
 
@@ -125,7 +158,15 @@
             var text = wrap ? wrap.querySelector('input[type="text"]') : null;
             if (!text || e.target !== text) return;
             var before = text.value;
-            text.value = expandHex(text.value) || wrap.querySelector('input[type="color"]').value;
+            var picker = wrap.querySelector('input[type="color"]');
+            if (!before.trim()) {
+                // 비워두면 기본색 #ffaa56 적용
+                var def = wrap.getAttribute('data-default') || '#ffaa56';
+                text.value = def;
+                picker.value = def;
+            } else {
+                text.value = expandHex(text.value) || picker.value;
+            }
             if (text.value !== before) text.dispatchEvent(new Event('input', { bubbles: true }));
         });
 
@@ -230,7 +271,7 @@
 
             // 배너 테두리: 굵기 0 이거나 색상이 올바르지 않으면 미리보기 기본 테두리 유지
             var bdW = Math.max(0, Math.min(20, parseInt(fieldVal(form, 'border_width'), 10) || 0));
-            var bdC = fieldVal(form, 'border_color').trim();
+            var bdC = fieldVal(form, 'border_color').trim() || '#ffaa56';
             card.style.border = (bdW > 0 && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(bdC)) ? bdW + 'px solid ' + bdC : '';
 
             // 배너 그림자: 숨김이면 미리보기 카드에서도 제거
@@ -377,6 +418,7 @@
                 if (!ta) return;
                 function fire() {
                     ta.value = evt.editor.getData();
+                    if (ta.form && ta.form.__tpHtmlSync) ta.form.__tpHtmlSync();
                     ta.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 evt.editor.on('change', fire);
@@ -396,7 +438,58 @@
                 if (!rel[k] || !rel[k].content || !e.target.contains(rel[k].content)) continue;
                 try { rel[k].content.value = rel[k].func(k); } catch (err) {}
             }
+            if (e.target.__tpHtmlSync) e.target.__tpHtmlSync();
         }, true);
+
+        /* ---------- 텍스트 본문 언어별 탭 (에디터 1개를 언어별 내용으로 바꿔 가며 편집) ---------- */
+        var htmlTabWraps = root.querySelectorAll('.triplepopup-htmltabs');
+        for (var hw = 0; hw < htmlTabWraps.length; hw++) {
+            (function (wrap) {
+                var form  = wrap.closest('form');
+                var store = form.querySelector('input[name="html_contents"]');
+                var ta    = form.querySelector('textarea[name="html_content"]');
+                var tabs  = wrap.querySelectorAll('.triplepopup-htmltab');
+                var data  = {};
+                var cur   = '_default';
+                try { data = JSON.parse(store.value) || {}; } catch (err) { data = {}; }
+
+                function getInstance() {
+                    var rel = window.editorRelKeys || {};
+                    for (var k in rel) {
+                        if (rel[k] && rel[k].content && form.contains(rel[k].content) && typeof window._getCkeInstance === 'function') {
+                            return window._getCkeInstance(k) || null;
+                        }
+                    }
+                    return null;
+                }
+
+                // 지금 편집 중인 내용을 저장 대상(JSON)에 반영
+                form.__tpHtmlSync = function () {
+                    var inst = getInstance();
+                    data[cur] = (inst && inst.getData) ? inst.getData() : ta.value;
+                    store.value = JSON.stringify(data);
+                    for (var i = 0; i < tabs.length; i++) {
+                        tabs[i].classList.toggle('triplepopup-has-img', !!(data[tabs[i].getAttribute('data-lang')] || '').trim());
+                    }
+                };
+                form.__tpHtmlSync();
+
+                wrap.addEventListener('click', function (e) {
+                    var tab  = e.target.closest ? e.target.closest('.triplepopup-htmltab') : null;
+                    var inst = getInstance();
+                    if (!tab || !inst || !inst.setData) return;
+                    var code = tab.getAttribute('data-lang');
+                    if (code === cur) return;
+                    form.__tpHtmlSync();
+                    cur = code;
+                    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('triplepopup-is-active', tabs[i] === tab);
+                    inst.setData(data[code] || '', function () {
+                        ta.value = inst.getData();
+                        ta.dispatchEvent(new Event('input', { bubbles: true })); // 미리보기 갱신
+                    });
+                });
+            })(htmlTabWraps[hw]);
+        }
 
         /* ---------- 언어별 이미지 탭 ---------- */
         function setPreviewImage(form, src) {

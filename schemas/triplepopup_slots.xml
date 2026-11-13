@@ -9,6 +9,7 @@
     <column name="title_text"      type="varchar"  size="200" />
     <column name="sub_text"        type="varchar"  size="300" />
     <column name="html_content"    type="text" />
+    <column name="html_contents"   type="text" />
     <column name="html_position"   type="varchar"  size="10"  default="top" />
     <column name="html_bg_color"   type="varchar"  size="20"  default="#ffffff" />
     <column name="html_bg_trans"   type="tinyint"  size="3"   default="0" />

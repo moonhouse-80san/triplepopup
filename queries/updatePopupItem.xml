@@ -10,6 +10,7 @@
         <column name="title_text"      var="title_text"      force="force" />
         <column name="sub_text"        var="sub_text"        force="force" />
         <column name="html_content"    var="html_content"    force="force" />
+        <column name="html_contents"   var="html_contents"   force="force" />
         <column name="html_position"   var="html_position" />
         <column name="html_bg_color"   var="html_bg_color" />
         <column name="html_bg_trans"   var="html_bg_trans"   force="force" />

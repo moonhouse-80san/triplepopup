@@ -55,6 +55,9 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_content')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'html_contents')) {
+            return true;
+        }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_position')) {
             return true;
         }
@@ -135,6 +138,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_content')) {
             $oDB->addColumn('triplepopup_slots', 'html_content', 'text');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'html_contents')) {
+            $oDB->addColumn('triplepopup_slots', 'html_contents', 'text');
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_position')) {
             $oDB->addColumn('triplepopup_slots', 'html_position', 'varchar', 10, 'top');
@@ -228,6 +234,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_content')) {
             $oDB->addColumn('triplepopup_slots', 'html_content', 'text');
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'html_contents')) {
+            $oDB->addColumn('triplepopup_slots', 'html_contents', 'text');
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'html_position')) {
             $oDB->addColumn('triplepopup_slots', 'html_position', 'varchar', 10, 'top');

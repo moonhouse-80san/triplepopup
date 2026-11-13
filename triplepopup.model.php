@@ -174,6 +174,13 @@ class triplepopupModel extends triplepopup
             }
             unset($item->body_images);
 
+            // 텍스트 본문 언어별 내용: 현재 접속 언어의 본문이 있으면 교체, 없으면 기본 본문 사용
+            $html_contents = json_decode((string)($item->html_contents ?? ''), true);
+            if (is_array($html_contents) && !empty($html_contents[$cur_lang])) {
+                $item->html_content = $html_contents[$cur_lang];
+            }
+            unset($item->html_contents);
+
             // 다국어 코드 → 현재 접속 언어의 텍스트로 치환
             foreach ($this->getLangFields() as $f) {
                 if (isset($item->{$f})) $item->{$f} = $this->resolveLangText($item->{$f});
@@ -292,6 +299,7 @@ class triplepopupModel extends triplepopup
                 $slot->title_text      = '';
                 $slot->sub_text        = '';
                 $slot->html_content    = '';
+                $slot->html_contents   = '';
                 $slot->html_position   = 'top';
                 $slot->html_bg_color   = '#ffffff';
                 $slot->html_bg_trans   = 0;
@@ -380,6 +388,10 @@ class triplepopupModel extends triplepopup
                 $li->image = isset($lang_images[$code]) ? $lang_images[$code] : '';
                 $slot->lang_images[] = $li;
             }
+
+            // 텍스트 본문 언어별 탭용 JSON (_default = 기본 본문)
+            $html_contents = json_decode((string)($slot->html_contents ?? ''), true);
+            $slot->html_contents_json = json_encode(array_merge(is_array($html_contents) ? $html_contents : array(), array('_default' => (string)$slot->html_content)), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             // 관리자 미리보기용 표시 텍스트 (다국어 코드 치환값)
             foreach ($this->getLangFields() as $f) {

@@ -160,6 +160,7 @@
                                         <button type="button" class="triplepopup-chip" data-color="#DCBBFF" title="보라" aria-label="보라" style="--chip:#DCBBFF"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#2B2B2B" title="검정" aria-label="검정" style="--chip:#2B2B2B"></button>
                                         <button type="button" class="triplepopup-chip triplepopup-chip-white" data-color="#FFFFFF" title="흰색" aria-label="흰색" style="--chip:#FFFFFF"></button>
+                                        <input type="text" class="triplepopup-hexmini" data-for="badge_bg_color" value="{escape($slot->badge_bg_color)}" maxlength="7" placeholder="#ffffff" autocomplete="off" spellcheck="false" title="HEX 색상 직접 입력·붙여넣기" />
                                     </div>
                                     <div class="triplepopup-presets triplepopup-presets-text" data-target="badge_text_color">
                                         <span class="triplepopup-presets-label">글자</span>
@@ -169,6 +170,7 @@
                                         <button type="button" class="triplepopup-chip" data-color="#B25E00" title="갈색" aria-label="갈색" style="--chip:#B25E00"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#0071E3" title="파랑" aria-label="파랑" style="--chip:#0071E3"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#248A3D" title="초록" aria-label="초록" style="--chip:#248A3D"></button>
+                                        <input type="text" class="triplepopup-hexmini" data-for="badge_text_color" value="{escape($slot->badge_text_color)}" maxlength="7" placeholder="#ffffff" autocomplete="off" spellcheck="false" title="HEX 색상 직접 입력·붙여넣기" />
                                     </div>
                                 </div>
                                 <div class="triplepopup-field">
@@ -200,6 +202,7 @@
                                         <button type="button" class="triplepopup-chip" data-color="#DCBBFF" title="보라" aria-label="보라" style="--chip:#DCBBFF"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#2B2B2B" title="검정" aria-label="검정" style="--chip:#2B2B2B"></button>
                                         <button type="button" class="triplepopup-chip triplepopup-chip-white" data-color="#FFFFFF" title="흰색" aria-label="흰색" style="--chip:#FFFFFF"></button>
+                                        <input type="text" class="triplepopup-hexmini" data-for="footer_bg_color" value="{escape($slot->footer_bg_color)}" maxlength="7" placeholder="#ffffff" autocomplete="off" spellcheck="false" title="HEX 색상 직접 입력·붙여넣기" />
                                     </div>
                                     <div class="triplepopup-presets triplepopup-presets-text" data-target="footer_text_color">
                                         <span class="triplepopup-presets-label">글자</span>
@@ -209,6 +212,7 @@
                                         <button type="button" class="triplepopup-chip" data-color="#B25E00" title="갈색" aria-label="갈색" style="--chip:#B25E00"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#0071E3" title="파랑" aria-label="파랑" style="--chip:#0071E3"></button>
                                         <button type="button" class="triplepopup-chip" data-color="#248A3D" title="초록" aria-label="초록" style="--chip:#248A3D"></button>
+                                        <input type="text" class="triplepopup-hexmini" data-for="footer_text_color" value="{escape($slot->footer_text_color)}" maxlength="7" placeholder="#ffffff" autocomplete="off" spellcheck="false" title="HEX 색상 직접 입력·붙여넣기" />
                                     </div>
                                 </div>
 
@@ -250,8 +254,18 @@
 
                                 <div class="triplepopup-field triplepopup-field-full">
                                     <label>텍스트 본문 (에디터) <span class="triplepopup-label-hint">이미지 없이 글만 넣어도 됩니다 · 비우면 표시 안 됨</span></label>
+                                    <!--@if(count($slot->lang_images) > 1)-->
+                                    <div class="triplepopup-htmltabs" role="tablist">
+                                        <button type="button" class="triplepopup-htmltab triplepopup-is-active" data-lang="_default" role="tab">기본<span class="triplepopup-langimg-dot"></span></button>
+                                        <!--@foreach($slot->lang_images as $li)-->
+                                        <button type="button" class="triplepopup-htmltab" data-lang="{$li->code}" role="tab">{escape($li->name)}<span class="triplepopup-langimg-dot"></span></button>
+                                        <!--@end-->
+                                    </div>
+                                    <input type="hidden" name="html_contents" value="{escape($slot->html_contents_json)}" />
+                                    <!--@end-->
                                     <textarea name="html_content" class="triplepopup-textarea" style="display:none" hidden="hidden">{escape($slot->html_content)}</textarea>
                                     {$slot->editor_html|noescape}
+                                    <!--@if(count($slot->lang_images) > 1)--><p class="triplepopup-hint">위 탭으로 <b>언어별 본문</b>을 따로 작성할 수 있습니다. <b>기본</b>은 해당 언어의 본문이 비어 있을 때 표시됩니다.</p><!--@end-->
                                     <p class="triplepopup-hint">도구 상자 오른쪽 끝의 <b>화살표</b>로 펼치면 전체 도구와 <b>에디터 컴포넌트</b>를 사용할 수 있습니다. 세부 스타일은 <b>소스</b> 버튼으로 HTML을 직접 작성하세요. 저장 시 <b>script · 이벤트 속성(onclick 등) · javascript: 링크</b>는 자동으로 제거됩니다.</p>
                                 </div>
 
@@ -265,8 +279,9 @@
 
                                 <div class="triplepopup-field">
                                     <label>본문 배경색</label>
-                                    <div class="triplepopup-inputwrap">
+                                    <div class="triplepopup-inputwrap triplepopup-hexcolor" data-default="#ffffff">
                                         <span class="triplepopup-swatch-cap">배경</span>
+                                        <input type="text" value="{escape($slot->html_bg_color)}" maxlength="7" class="triplepopup-input-flush" placeholder="#ffffff" autocomplete="off" spellcheck="false" title="본문 배경색 (HEX 직접 입력)" />
                                         <span class="triplepopup-swatch"><input type="color" name="html_bg_color" value="{$slot->html_bg_color}" title="본문 배경색" /></span>
                                     </div>
                                     <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix">
@@ -276,15 +291,17 @@
                                     </div>
                                     <div class="triplepopup-presets" data-target="html_bg_color">
                                         <span class="triplepopup-presets-label">배경</span>
+                                        <button type="button" class="triplepopup-chip" data-color="#FFB3B3" title="빨강" aria-label="빨강" style="--chip:#FFB3B3"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#FFD2A8" title="주황" aria-label="주황" style="--chip:#FFD2A8"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#FFF3A8" title="노랑" aria-label="노랑" style="--chip:#FFF3A8"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#BCE8C6" title="초록" aria-label="초록" style="--chip:#BCE8C6"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#B6DBFF" title="파랑" aria-label="파랑" style="--chip:#B6DBFF"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#A7B4E6" title="남색" aria-label="남색" style="--chip:#A7B4E6"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#DCBBFF" title="보라" aria-label="보라" style="--chip:#DCBBFF"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#2B2B2B" title="검정" aria-label="검정" style="--chip:#2B2B2B"></button>
                                         <button type="button" class="triplepopup-chip triplepopup-chip-white" data-color="#FFFFFF" title="흰색" aria-label="흰색" style="--chip:#FFFFFF"></button>
-                                        <button type="button" class="triplepopup-chip" data-color="#F5F5F7" title="연회색" aria-label="연회색" style="--chip:#F5F5F7"></button>
-                                        <button type="button" class="triplepopup-chip" data-color="#FFF8E7" title="연노랑" aria-label="연노랑" style="--chip:#FFF8E7"></button>
-                                        <button type="button" class="triplepopup-chip" data-color="#E8F5E9" title="연초록" aria-label="연초록" style="--chip:#E8F5E9"></button>
-                                        <button type="button" class="triplepopup-chip" data-color="#E3F2FD" title="연파랑" aria-label="연파랑" style="--chip:#E3F2FD"></button>
-                                        <button type="button" class="triplepopup-chip" data-color="#FCE4EC" title="연분홍" aria-label="연분홍" style="--chip:#FCE4EC"></button>
-                                        <button type="button" class="triplepopup-chip" data-color="#1d1d1f" title="검정" aria-label="검정" style="--chip:#1d1d1f"></button>
                                     </div>
-                                    <p class="triplepopup-hint">텍스트 본문(HTML) 영역의 배경색입니다. 기본은 흰색입니다. 투명도는 <b>0 = 불투명, 100 = 완전 투명</b>입니다.</p>
+                                    <p class="triplepopup-hint">텍스트 본문(HTML) 영역의 배경색입니다. 기본은 흰색이며, <b>#ffffff</b> 처럼 직접 입력하거나 붙여넣을 수 있습니다. 투명도는 <b>0 = 불투명, 100 = 완전 투명</b>입니다.</p>
                                 </div>
 
                                 <div class="triplepopup-field triplepopup-field-full">
@@ -353,6 +370,18 @@
                                     <div class="triplepopup-inputwrap triplepopup-hexcolor">
                                         <input type="text" name="border_color" value="{escape($slot->border_color)}" maxlength="7" class="triplepopup-input-flush" placeholder="#ffaa56" autocomplete="off" spellcheck="false" />
                                         <span class="triplepopup-swatch"><input type="color" value="{escape($slot->border_color)}" title="테두리 색상 선택" /></span>
+                                    </div>
+                                    <div class="triplepopup-presets" data-target="border_color">
+                                        <span class="triplepopup-presets-label">색상</span>
+                                        <button type="button" class="triplepopup-chip" data-color="#FFB3B3" title="빨강" aria-label="빨강" style="--chip:#FFB3B3"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#FFD2A8" title="주황" aria-label="주황" style="--chip:#FFD2A8"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#FFF3A8" title="노랑" aria-label="노랑" style="--chip:#FFF3A8"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#BCE8C6" title="초록" aria-label="초록" style="--chip:#BCE8C6"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#B6DBFF" title="파랑" aria-label="파랑" style="--chip:#B6DBFF"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#A7B4E6" title="남색" aria-label="남색" style="--chip:#A7B4E6"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#DCBBFF" title="보라" aria-label="보라" style="--chip:#DCBBFF"></button>
+                                        <button type="button" class="triplepopup-chip" data-color="#2B2B2B" title="검정" aria-label="검정" style="--chip:#2B2B2B"></button>
+                                        <button type="button" class="triplepopup-chip triplepopup-chip-white" data-color="#FFFFFF" title="흰색" aria-label="흰색" style="--chip:#FFFFFF"></button>
                                     </div>
                                     <p class="triplepopup-hint">오른쪽 색상표로 고르거나 <b>#ffffff</b> 처럼 직접 입력합니다. (기본 #ffaa56)</p>
                                 </div>

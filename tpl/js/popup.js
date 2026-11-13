@@ -4,6 +4,9 @@
     var COOKIE_NAME = 'rx_popup_hidden';
     var apiUrl = window.TRIPLEPOPUP_API || '/index.php?module=triplepopup&act=getTriplepopupData';
     var GAP    = 20;
+    var UI     = {}; // 접속 언어별 문구 (서버 lang/*.php → config.ui)
+    function t(key, fallback) { return (UI[key] && UI[key] !== 'tp_' + key) ? UI[key] : fallback; }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     var XPAD   = 20; // 그림자·X버튼·LogIn탭이 잘리지 않도록 뷰포트 4면 여백(px, CSS padding 과 동일)
 
     function getCookie(name) {
@@ -65,6 +68,7 @@
         var interval = Math.max(1, parseInt(config.slide_interval, 10) || 3) * 1000;
         var maxW     = parseInt(config.popup_width, 10) || 420;
         var closeDays = Math.max(1, Math.min(365, parseInt(config.close_days, 10) || 1));
+        UI = config.ui || {};
 
         var layout       = getLayout(count, maxW);
         var currentIndex = 0;
@@ -96,12 +100,12 @@
 
         var prevBtn = document.createElement('button');
         prevBtn.className = 'triplepopup-pop-nav-btn prev';
-        prevBtn.setAttribute('aria-label', '이전');
+        prevBtn.setAttribute('aria-label', t('prev', '이전'));
         prevBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
         var nextBtn = document.createElement('button');
         nextBtn.className = 'triplepopup-pop-nav-btn next';
-        nextBtn.setAttribute('aria-label', '다음');
+        nextBtn.setAttribute('aria-label', t('next', '다음'));
         nextBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
 
         if (count > 1) {
@@ -116,11 +120,11 @@
 
         var todayBtn = document.createElement('button');
         todayBtn.className = 'triplepopup-pop-today-close';
-        todayBtn.innerHTML = (closeDays > 1) ? '&#10003; ' + closeDays + '일간 닫기' : '&#10003; 오늘하루 그만보기';
+        todayBtn.innerHTML = '&#10003; ' + esc((closeDays > 1) ? t('days_close', '%d일간 닫기').replace('%d', closeDays) : t('today_close', '오늘하루 그만보기'));
 
         var closeBtn = document.createElement('button');
         closeBtn.className = 'triplepopup-pop-close-btn';
-        closeBtn.innerHTML = '닫기 &times;';
+        closeBtn.innerHTML = esc(t('close', '닫기')) + ' &times;';
 
         bottom.appendChild(todayBtn);
         bottom.appendChild(closeBtn);
@@ -518,7 +522,7 @@
             var xBtn = document.createElement('button');
             xBtn.type = 'button';
             xBtn.className = 'triplepopup-pop-card-close';
-            xBtn.setAttribute('aria-label', '이 배너 닫기');
+            xBtn.setAttribute('aria-label', t('banner_close', '이 배너 닫기'));
             xBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
             xBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
@@ -552,7 +556,7 @@
         toggleBtn.type = 'button';
         toggleBtn.className = 'triplepopup-pop-auth-toggle';
         toggleBtn.setAttribute('aria-expanded', 'false');
-        toggleBtn.setAttribute('aria-label', '로그인 열기');
+        toggleBtn.setAttribute('aria-label', t('login_open', '로그인 열기'));
         // 탭 색상 = 배너 테두리 색상 (없으면 기본 오렌지)
         var borderColor = '#f5a623';
         if (borderW > 0 && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(item.border_color || '')) {
@@ -578,7 +582,7 @@
             snsBox.className = 'triplepopup-pop-sns';
             var snsTitle = document.createElement('div');
             snsTitle.className = 'triplepopup-pop-sns-title';
-            snsTitle.textContent = 'SNS 로그인';
+            snsTitle.textContent = t('sns_login', 'SNS 로그인');
             var snsWidget = document.createElement('div');
             snsWidget.className = 'zzan-sns-login';
             snsWidget.setAttribute('data-services', 'kakao,google');
@@ -593,7 +597,7 @@
             panel.hidden = !open;
             box.classList.toggle('is-open', open);
             toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            toggleBtn.setAttribute('aria-label', open ? '로그인 접기' : '로그인 열기');
+            toggleBtn.setAttribute('aria-label', open ? t('login_fold', '로그인 접기') : t('login_open', '로그인 열기'));
             var label = toggleBtn.querySelector('.triplepopup-pop-auth-toggle-label');
             if (label) label.textContent = open ? 'Close' : 'LogIn';
         });
@@ -613,7 +617,7 @@
         fields.className = 'triplepopup-pop-login-fields';
 
         var inputs = {};
-        [['user_id', 'text', '아이디', 'username'], ['password', 'password', '비밀번호', 'current-password']].forEach(function (f) {
+        [['user_id', 'text', t('user_id', '아이디'), 'username'], ['password', 'password', t('password', '비밀번호'), 'current-password']].forEach(function (f) {
             var input = document.createElement('input');
             input.className = 'triplepopup-pop-login-input';
             input.name = f[0];
@@ -632,7 +636,7 @@
         keep.type = 'checkbox';
         keep.name = 'keep_signed';
         keepLabel.appendChild(keep);
-        keepLabel.appendChild(document.createTextNode(' 로그인 유지'));
+        keepLabel.appendChild(document.createTextNode(' ' + t('keep_login', '로그인 유지')));
         fields.appendChild(keepLabel);
 
         var msg = document.createElement('div');
@@ -646,7 +650,7 @@
         btn.className = 'triplepopup-pop-login-btn';
         btn.style.background = item.footer_bg_color || '#0071e3';
         btn.style.color      = item.footer_text_color || '#ffffff';
-        btn.textContent      = '로그인';
+        btn.textContent      = t('login', '로그인');
 
         // 회원가입 버튼 — 라이믹스 회원가입 화면으로 이동
         var signup = document.createElement('button');
@@ -654,7 +658,7 @@
         signup.className = 'triplepopup-pop-signup-btn';
         signup.style.color = item.footer_bg_color || '#0071e3';
         signup.style.borderColor = item.footer_bg_color || '#0071e3';
-        signup.textContent = '회원가입';
+        signup.textContent = t('signup', '회원가입');
         signup.addEventListener('click', function () {
             window.location.href = (window.request_uri || '/') + 'index.php?act=dispMemberSignUpForm';
         });
@@ -669,8 +673,8 @@
             e.preventDefault();
             var userId = inputs.user_id.value.trim();
             var pw     = inputs.password.value;
-            if (!userId || !pw) { msg.textContent = '아이디와 비밀번호를 입력해 주세요.'; return; }
-            if (typeof window.exec_json !== 'function') { msg.textContent = '이 페이지에서는 로그인을 사용할 수 없습니다. 새로고침 후 다시 시도해 주세요.'; return; }
+            if (!userId || !pw) { msg.textContent = t('need_idpw', '아이디와 비밀번호를 입력해 주세요.'); return; }
+            if (typeof window.exec_json !== 'function') { msg.textContent = t('login_unavailable', '이 페이지에서는 로그인을 사용할 수 없습니다. 새로고침 후 다시 시도해 주세요.'); return; }
             msg.textContent = '';
             btn.disabled = true;
             window.exec_json('member.procMemberLogin', { user_id: userId, password: pw, keep_signed: keep.checked ? 'Y' : 'N' }, function () {
@@ -678,7 +682,7 @@
             }, function (res) {
                 btn.disabled = false;
                 inputs.password.value = '';
-                msg.textContent = (res && res.message) ? String(res.message).replace(/\\n/g, ' ') : '로그인에 실패했습니다.';
+                msg.textContent = (res && res.message) ? String(res.message).replace(/\\n/g, ' ') : t('login_failed', '로그인에 실패했습니다.');
                 return false; // 기본 경고창 대신 팝업 안에 메시지 표시
             });
         });

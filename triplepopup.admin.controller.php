@@ -248,7 +248,26 @@ class triplepopupAdminController extends triplepopup
 
         // 이미지 위 HTML: 업로드 처리 전에 검증하여 실패 시 고아 파일이 남지 않게 한다.
         // HTMLFilter 로 script · 이벤트 속성 · javascript: 링크 등 XSS 요소를 제거한 값만 저장 (class 와 에디터 컴포넌트는 허용)
-        $htmlContent = \Rhymix\Framework\Filters\HTMLFilter::clean(trim((string)Context::get('html_content')), true, true);
+        $htmlContent  = trim((string)Context::get('html_content'));
+        $htmlContents = '';
+        $htmlMap      = json_decode((string)Context::get('html_contents'), true);
+        if (is_array($htmlMap)) {
+            // 언어별 탭 사용: _default = 기본 본문, 나머지 키 = 언어 코드
+            if (isset($htmlMap['_default'])) $htmlContent = trim((string)$htmlMap['_default']);
+            $enabledLangs = $this->getEnabledLangs();
+            $langMap = array();
+            foreach ($htmlMap as $code => $html) {
+                $html = trim((string)$html);
+                if ($code === '_default' || $html === '' || !isset($enabledLangs[$code])) continue;
+                $html = \Rhymix\Framework\Filters\HTMLFilter::clean($html, true, true);
+                if (strlen($html) > 20000) {
+                    return $this->setError(-1, '언어별 텍스트 본문은 각각 20,000바이트 이하로 입력해 주세요.');
+                }
+                $langMap[$code] = $html;
+            }
+            if ($langMap) $htmlContents = json_encode($langMap, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+        $htmlContent = \Rhymix\Framework\Filters\HTMLFilter::clean($htmlContent, true, true);
         if (strlen($htmlContent) > 20000) {
             return $this->setError(-1, '이미지 위 HTML 은 20,000바이트 이하로 입력해 주세요.');
         }
@@ -333,6 +352,7 @@ class triplepopupAdminController extends triplepopup
         $args->title_text      = $this->_normalizeLangText(Context::get('title_text'), true);
         $args->sub_text        = $this->_normalizeLangText(Context::get('sub_text'), true);
         $args->html_content    = $htmlContent;
+        $args->html_contents   = $htmlContents;
         $args->html_position   = (Context::get('html_position') === 'overlay') ? 'overlay' : 'top';
         $args->html_bg_color   = $this->_normalizeColor(Context::get('html_bg_color'), '#ffffff');
         $args->html_bg_trans   = max(0, min(100, (int)Context::get('html_bg_trans')));

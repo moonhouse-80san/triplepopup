@@ -474,6 +474,24 @@
     box-shadow: 0 0 0 3px var(--tpop-accent-ring);
 }
 .triplepopup-admin button.triplepopup-chip-white { border-color: var(--tpop-line); }
+.triplepopup-admin input.triplepopup-hexmini {
+    flex: 0 0 auto;
+    width: 82px;
+    height: 24px;
+    margin-left: auto;
+    padding: 0 8px;
+    border: var(--tpop-bw) solid var(--tpop-line);
+    border-radius: 7px;
+    background: #fff;
+    font-size: 12px;
+    line-height: 1;
+    color: inherit;
+    outline: none;
+}
+.triplepopup-admin input.triplepopup-hexmini:focus {
+    border-color: var(--tpop-accent);
+    box-shadow: 0 0 0 3px var(--tpop-accent-ring);
+}
 .triplepopup-admin button.triplepopup-chip.triplepopup-is-selected {
     box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tpop-accent);
 }
@@ -1460,6 +1478,37 @@
     background: var(--tpop-line);
 }
 .triplepopup-admin .triplepopup-langimg-tab.triplepopup-has-img .triplepopup-langimg-dot { background: var(--tpop-accent); }
+.triplepopup-admin .triplepopup-htmltabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+    margin-bottom: 6px;
+    border: var(--tpop-bw) solid var(--tpop-line-soft);
+    border-radius: 9px;
+    background: var(--tpop-bg-soft);
+}
+.triplepopup-admin button.triplepopup-htmltab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: var(--tpop-h-ctl-sm);
+    padding: 0 12px;
+    border-radius: 7px;
+    font-size: var(--tpop-fs-2);
+    letter-spacing: var(--tpop-ls-2);
+    color: var(--tpop-text-sub);
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease;
+}
+.triplepopup-admin button.triplepopup-htmltab:hover { background: #fff; color: var(--tpop-text); }
+.triplepopup-admin button.triplepopup-htmltab.triplepopup-is-active {
+    background: #fff;
+    color: var(--tpop-text);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.triplepopup-admin .triplepopup-htmltab.triplepopup-has-img .triplepopup-langimg-dot { background: var(--tpop-accent); }
 .triplepopup-admin .triplepopup-langimg-pane { padding: var(--tpop-sp-4); }
 .triplepopup-admin .triplepopup-langimg-pane .triplepopup-upload { padding: 0; border: 0; border-radius: 0; }
 .triplepopup-admin .triplepopup-langimg-thumb {

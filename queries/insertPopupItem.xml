@@ -11,6 +11,7 @@
         <column name="title_text"      var="title_text" />
         <column name="sub_text"        var="sub_text" />
         <column name="html_content"    var="html_content" />
+        <column name="html_contents"   var="html_contents" />
         <column name="html_position"   var="html_position" />
         <column name="html_bg_color"   var="html_bg_color" />
         <column name="html_bg_trans"   var="html_bg_trans" />
