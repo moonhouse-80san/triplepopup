@@ -16,6 +16,7 @@
         <column name="html_bg_color"   var="html_bg_color" />
         <column name="html_bg_trans"   var="html_bg_trans" />
         <column name="border_width"    var="border_width" />
+        <column name="auto_close_sec"  var="auto_close_sec" />
         <column name="border_color"    var="border_color" />
         <column name="card_shadow"     var="card_shadow" />
         <column name="overlay_dim"     var="overlay_dim"     force="force" />

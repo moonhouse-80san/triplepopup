@@ -79,6 +79,9 @@ class triplepopup extends ModuleObject
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
             return true;
         }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'auto_close_sec')) {
+            return true;
+        }
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
             return true;
         }
@@ -162,6 +165,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
             $oDB->addColumn('triplepopup_slots', 'border_width', 'tinyint', 3, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'auto_close_sec')) {
+            $oDB->addColumn('triplepopup_slots', 'auto_close_sec', 'varchar', 6, '');
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
             $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
@@ -258,6 +264,9 @@ class triplepopup extends ModuleObject
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
             $oDB->addColumn('triplepopup_slots', 'border_width', 'tinyint', 3, 0);
+        }
+        if (!$oDB->isColumnExists('triplepopup_slots', 'auto_close_sec')) {
+            $oDB->addColumn('triplepopup_slots', 'auto_close_sec', 'varchar', 6, '');
         }
         if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
             $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');

@@ -175,6 +175,25 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.45);
     transition: filter 0.18s ease, transform 0.18s ease;
 }
+/* 배너별 자동 종료 남은 시간 — X 버튼 왼쪽 */
+#triplepopup-pop-root .triplepopup-pop-card-count {
+    position: absolute;
+    top: -4px;
+    right: 26px;
+    z-index: 5;
+    min-width: 22px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 9px;
+    background: rgba(0,0,0,0.65);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    pointer-events: none;
+    box-sizing: border-box;
+}
 #triplepopup-pop-root .triplepopup-pop-card-close svg { display: block; width: 12px; height: 12px; pointer-events: none; }
 #triplepopup-pop-root .triplepopup-pop-card-close:hover { filter: brightness(1.1); transform: scale(1.08); }
 

@@ -26,6 +26,7 @@ class triplepopupModel extends triplepopup
         if (empty($config->slot_order))      $config->slot_order = '1,2,3,4,5,6';
         if (empty($config->popup_width))     $config->popup_width = 420;
         if (empty($config->close_days))      $config->close_days = 1;
+        if (empty($config->auto_close))      $config->auto_close = 0;
         if (!isset($config->target_mids) || !is_array($config->target_mids)) $config->target_mids = array();
         if (!in_array($config->module_sort ?? '', array('title', 'mid', 'created'), true)) $config->module_sort = 'title';
         return $config;
@@ -339,6 +340,8 @@ class triplepopupModel extends triplepopup
             $slot->html_bg_trans = isset($slot->html_bg_trans) ? max(0, min(100, (int)$slot->html_bg_trans)) : 0;
             // 배너 테두리 (굵기 0 = 없음, 색상 기본 #ffaa56)
             $slot->border_width = isset($slot->border_width) ? max(0, min(20, (int)$slot->border_width)) : 0;
+            // 배너별 자동 종료 시간 (초): 빈칸 = 전체 설정 따름, 0 = 자동 종료 안 함
+            $slot->auto_close_sec = (isset($slot->auto_close_sec) && ctype_digit((string)$slot->auto_close_sec)) ? (string)min(3600, (int)$slot->auto_close_sec) : '';
             if (!isset($slot->border_color) || $slot->border_color === '') $slot->border_color = '#ffaa56';
             // 배너 그림자 (기본 N = 숨김, Y = 표시)
             $slot->card_shadow = (isset($slot->card_shadow) && $slot->card_shadow === 'Y') ? 'Y' : 'N';

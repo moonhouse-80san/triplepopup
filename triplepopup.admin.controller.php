@@ -156,6 +156,8 @@ class triplepopupAdminController extends triplepopup
         $config->popup_width = $w;
         // 팝업창 닫는 날짜(닫기 후 다시 보이지 않는 일수): 1~365일 (기본 1 = 하루)
         $config->close_days = max(1, min(365, (int)Context::get('close_days')));
+        // 팝업창 자동 종료 시간: 0~3600초 (기본 0 = 자동 종료 안 함)
+        $config->auto_close = max(0, min(3600, (int)Context::get('auto_close')));
 
         $oModuleController = getController('module');
         $oModuleController->updateModuleConfig('triplepopup', $config);
@@ -357,6 +359,9 @@ class triplepopupAdminController extends triplepopup
         $args->html_bg_color   = $this->_normalizeColor(Context::get('html_bg_color'), '#ffffff');
         $args->html_bg_trans   = max(0, min(100, (int)Context::get('html_bg_trans')));
         $args->border_width    = max(0, min(20, (int)Context::get('border_width')));
+        // 배너별 자동 종료 시간: 빈칸 = 전체 설정 따름, 0 = 자동 종료 안 함
+        $autoCloseSec          = trim((string)Context::get('auto_close_sec'));
+        $args->auto_close_sec  = ctype_digit($autoCloseSec) ? (string)min(3600, (int)$autoCloseSec) : '';
         $args->border_color    = $this->_normalizeColor(Context::get('border_color'), '#ffaa56');
         $args->card_shadow     = (Context::get('card_shadow') === 'Y') ? 'Y' : 'N';
         // 배경 어둡기: 0~100% (기본 42)

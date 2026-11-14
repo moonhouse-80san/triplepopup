@@ -4,6 +4,12 @@
     var COOKIE_NAME = 'rx_popup_hidden';
     var apiUrl = window.TRIPLEPOPUP_API || '/index.php?module=triplepopup&act=getTriplepopupData';
     var GAP    = 20;
+    var AUTO_DEFAULT = 0; // 모듈 설정의 팝업창 자동 종료 Time (초)
+    // 배너의 자동 종료 초: 배너 값이 있으면 그 값(0 = 안 닫음), 비어 있으면 모듈 설정을 따른다
+    function autoSecOf(item) {
+        var raw = (item.auto_close_sec === null || item.auto_close_sec === undefined) ? '' : String(item.auto_close_sec).trim();
+        return (raw === '') ? AUTO_DEFAULT : Math.max(0, Math.min(3600, parseInt(raw, 10) || 0));
+    }
     var UI     = {}; // 접속 언어별 문구 (서버 lang/*.php → config.ui)
     function t(key, fallback) { return (UI[key] && UI[key] !== 'tp_' + key) ? UI[key] : fallback; }
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -69,6 +75,7 @@
         var maxW     = parseInt(config.popup_width, 10) || 420;
         var closeDays = Math.max(1, Math.min(365, parseInt(config.close_days, 10) || 1));
         UI = config.ui || {};
+        AUTO_DEFAULT = Math.max(0, Math.min(3600, parseInt(config.auto_close, 10) || 0));
 
         var layout       = getLayout(count, maxW);
         var currentIndex = 0;
@@ -346,6 +353,22 @@
             clearInterval(slideTimer);
             overlay.parentNode && overlay.parentNode.removeChild(overlay);
         });
+
+        // 자동 종료는 배너별로 동작한다(buildCard). 모든 배너가 자동으로 닫히는 경우에만
+        // 팝업이 끝날 때까지 남은 시간을 '닫기 (5) ×' 형태로 표시한다 (표시 전용, 쿠키 없음)
+        var autoLeft = 0;
+        var allAuto  = items.length > 0;
+        for (var ai = 0; ai < items.length; ai++) {
+            var aSec = autoSecOf(items[ai]);
+            if (aSec < 1) allAuto = false; else if (aSec > autoLeft) autoLeft = aSec;
+        }
+        if (allAuto) {
+            closeBtn.innerHTML = esc(t('close', '닫기')) + ' (' + autoLeft + ') &times;';
+            var autoTimer = setInterval(function () {
+                if (!overlay.parentNode || --autoLeft < 1) { clearInterval(autoTimer); return; }
+                closeBtn.innerHTML = esc(t('close', '닫기')) + ' (' + autoLeft + ') &times;';
+            }, 1000);
+        }
     }
 
     function buildCard(item, w, baseRatio, onImgLoad, onClose) {
@@ -534,6 +557,25 @@
             cell.appendChild(card);
             if (authBox) cell.appendChild(authBox);
             cell.appendChild(xBtn);
+
+            // 배너별 자동 종료: 이 배너만 닫고, 남은 초는 X 버튼 옆에 표시한다
+            var autoSec = autoSecOf(item);
+            if (autoSec > 0) {
+                var badge = document.createElement('span');
+                badge.className   = 'triplepopup-pop-card-count';
+                badge.textContent = autoSec;
+                cell.appendChild(badge);
+                var cardTimer = setInterval(function () {
+                    if (!cell.isConnected) { clearInterval(cardTimer); return; } // 이미 닫힘
+                    autoSec--;
+                    if (autoSec < 1) {
+                        clearInterval(cardTimer);
+                        onClose(card);
+                        return;
+                    }
+                    badge.textContent = autoSec;
+                }, 1000);
+            }
             return cell;
         }
 

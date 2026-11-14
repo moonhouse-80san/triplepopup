@@ -49,6 +49,16 @@
                             <span class="triplepopup-hint">팝업창이 보이지 않는 날 수 (기본 1이 하루입니다.) 2 이상이면 팝업에 'N일간 닫기'로 표시됩니다.</span>
                         </div>
                     </div>
+                    <div class="triplepopup-form-row">
+                        <label class="triplepopup-label">팝업창 자동 종료 Time</label>
+                        <div class="triplepopup-control triplepopup-control-inline">
+                            <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix triplepopup-ctl">
+                                <input type="number" name="auto_close" value="{$config->auto_close}" min="0" max="3600" step="1" class="triplepopup-input-flush triplepopup-input-spin" />
+                                <span class="triplepopup-suffix">초</span>
+                            </div>
+                            <span class="triplepopup-hint">팝업이 뜬 뒤 이 시간이 지나면 각 배너가 자동으로 닫히고, 모든 배너가 닫히면 팝업이 끝납니다 (0~3600, 기본 0 = 자동으로 닫지 않음). 배너 편집의 '배너 자동 종료 Time'이 있으면 그 배너는 배너 설정을 따릅니다. 자동으로 닫힌 경우에는 다음 방문 때 다시 표시됩니다.</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="triplepopup-card-foot">
                     <button type="submit" class="triplepopup-btn triplepopup-btn-primary">설정 저장</button>
@@ -354,6 +364,15 @@
                                             <!--@end-->
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="triplepopup-field">
+                                    <label>배너 자동 종료 Time</label>
+                                    <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix">
+                                        <input type="number" name="auto_close_sec" value="{$slot->auto_close_sec}" min="0" max="3600" step="1" placeholder="전체 설정" class="triplepopup-input-flush triplepopup-input-spin" />
+                                        <span class="triplepopup-suffix">초</span>
+                                    </div>
+                                    <p class="triplepopup-hint">이 배너만 설정한 시간 뒤에 자동으로 닫히며, 모듈 설정의 '팝업창 자동 종료 Time'보다 우선합니다. 비워 두면(기본) 모듈 설정을 따르고, 0이면 이 배너는 자동으로 닫지 않습니다. 남은 시간은 배너 오른쪽 위 X 옆에 표시됩니다. (최대 3600)</p>
                                 </div>
 
                                 <div class="triplepopup-field">
