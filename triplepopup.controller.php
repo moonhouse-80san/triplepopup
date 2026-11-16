@@ -1,4 +1,5 @@
 <?php
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 class triplepopupController extends triplepopup
 {
     function init() {}

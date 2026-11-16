@@ -1,4 +1,5 @@
 <?php
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 class triplepopupModel extends triplepopup
 {
     function init() {}
@@ -24,11 +25,18 @@ class triplepopupModel extends triplepopup
         if (empty($config->slide_interval)) $config->slide_interval = 3;
         if (empty($config->is_active))      $config->is_active = 'Y';
         if (empty($config->slot_order))      $config->slot_order = '1,2,3,4,5,6';
-        if (empty($config->popup_width))     $config->popup_width = 420;
+        // 카드 가로 폭: 0 = 가로 배너 수에 맞춰 자동, 180~900 = 직접 지정한 폭(px)
+        $config->popup_width = isset($config->popup_width) ? ((int)$config->popup_width > 0 ? max(180, min(900, (int)$config->popup_width)) : 0) : 0;
         if (empty($config->close_days))      $config->close_days = 1;
         if (empty($config->auto_close))      $config->auto_close = 0;
         if (!isset($config->target_mids) || !is_array($config->target_mids)) $config->target_mids = array();
         if (!in_array($config->module_sort ?? '', array('title', 'mid', 'created'), true)) $config->module_sort = 'title';
+        // 팝업 비율: 선택한 적이 없으면 auto (이미지 원본 비율 그대로 — 기존 동작)
+        if (!isset($config->popup_ratio) || !in_array($config->popup_ratio, $this->getRatioList(), true)) $config->popup_ratio = 'auto';
+        $cols = isset($config->popup_cols) ? (int)$config->popup_cols : 3;
+        $config->popup_cols = ($cols >= 1 && $cols <= 4) ? $cols : 3;
+        $effect = isset($config->popup_effect) ? (int)$config->popup_effect : 1;
+        $config->popup_effect = ($effect >= 1 && $effect <= self::EFFECT_COUNT) ? $effect : 1;
         return $config;
     }
 
@@ -119,10 +127,11 @@ class triplepopupModel extends triplepopup
      * 현재 페이지에 노출할 배너 목록.
      * $moduleSrl: 현재 페이지의 모듈 번호, $mid: 현재 페이지의 mid (null 이면 페이지 정보를 모르는 요청이므로 동작 모듈설정 필터를 건너뜀 — 노출 여부는 트리거에서 이미 판단)
      * $isDocument: 게시글(내용글) 보기 화면 여부 — true 이면 '게시글 보기 화면에서는 출력 안 함' 배너를 제외
+     * $preview: 관리자 미리보기 — true 이면 페이지·모듈·회원그룹 조건과 로그인 숨김을 적용하지 않고 노출 기간이 맞는 활성 배너를 모두 반환
      * - 배너에 '노출 모듈'이 직접 입력되어 있으면 해당 모듈 번호에서만 노출 (동작 모듈설정보다 우선)
      * - 비어 있으면 동작 모듈설정(대상 mid)을 따름 (대상 미지정이면 전체 노출)
      */
-    function getPopupItemList($moduleSrl = 0, $mid = null, $isDocument = false)
+    function getPopupItemList($moduleSrl = 0, $mid = null, $isDocument = false, $preview = false)
     {
         $targetMids = $this->getPopupConfig()->target_mids;
         $args = new stdClass();
@@ -148,16 +157,18 @@ class triplepopupModel extends triplepopup
             // 회원그룹 필터: 지정이 없으면 전체 노출, 지정하면 해당 그룹 회원(또는 'guest' 선택 시 비로그인)에게만 노출
             $targetGroups = $this->_splitTargetGroups(isset($item->target_groups) ? $item->target_groups : '');
             unset($item->target_groups);
-            if (!empty($targetGroups) && !array_intersect($targetGroups, $viewerGroups)) continue;
+            if (!$preview && !empty($targetGroups) && !array_intersect($targetGroups, $viewerGroups)) continue;
 
             // 게시글 보기 화면에서는 출력 안 함으로 지정한 배너는 내용글 화면에서 제외 (목록 화면에서만 노출)
-            if ($isDocument && isset($item->hide_on_document) && $item->hide_on_document === 'Y') continue;
+            if (!$preview && $isDocument && isset($item->hide_on_document) && $item->hide_on_document === 'Y') continue;
             unset($item->hide_on_document);
 
             // 노출 모듈 필터: 배너에 직접 입력한 모듈 번호가 있으면 그 모듈에서만, 없으면 동작 모듈설정(대상 mid)을 따른다
             $targetModules = $this->_splitTargetModules(isset($item->target_modules) ? $item->target_modules : '');
             unset($item->target_modules);
-            if (!empty($targetModules)) {
+            if ($preview) {
+                // 미리보기는 페이지 조건 없이 통과
+            } elseif (!empty($targetModules)) {
                 if (!in_array((string)(int)$moduleSrl, $targetModules, true)) continue;
             } elseif (!empty($targetMids) && $mid !== null && ($mid === '' || !in_array((string)$mid, $targetMids, true))) {
                 continue;
@@ -175,6 +186,28 @@ class triplepopupModel extends triplepopup
             }
             unset($item->body_images);
 
+            // 유튜브 배너: 영상 ID·쇼츠 여부·재생 옵션을 내려준다 (주소가 올바르지 않으면 이미지 배너로 처리)
+            $yt = (isset($item->media_type) && $item->media_type === 'youtube')
+                ? $this->parseYoutubeUrl(isset($item->youtube_url) ? $item->youtube_url : '') : null;
+            if ($yt) {
+                $opt = $this->decodeYoutubeOptions(isset($item->youtube_options) ? $item->youtube_options : '');
+                $item->media_type     = 'youtube';
+                $item->youtube_id     = $yt->id;
+                $item->youtube_shorts = $yt->shorts;
+                $item->youtube = array(
+                    'autoplay'    => $opt->autoplay === 'Y',
+                    'mute'        => $opt->mute === 'Y',
+                    'loop'        => $opt->loop === 'Y',
+                    'controls'    => $opt->controls === 'Y',
+                    'cover'       => $opt->cover === 'Y',
+                    'pause_slide' => $opt->pause_slide === 'Y',
+                    'start'       => $opt->start,
+                );
+            } else {
+                $item->media_type = 'image';
+            }
+            unset($item->youtube_url, $item->youtube_options);
+
             // 텍스트 본문 언어별 내용: 현재 접속 언어의 본문이 있으면 교체, 없으면 기본 본문 사용
             $html_contents = json_decode((string)($item->html_contents ?? ''), true);
             if (is_array($html_contents) && !empty($html_contents[$cur_lang])) {
@@ -187,7 +220,7 @@ class triplepopupModel extends triplepopup
                 if (isset($item->{$f})) $item->{$f} = $this->resolveLangText($item->{$f});
             }
             // 하단 로그인·SNS 로그인: 이미 로그인한 회원에게는 보여주지 않음 (하단 버튼은 그대로 표시)
-            if ($memberSrl) {
+            if ($memberSrl && !$preview) {
                 $item->footer_login = 'N';
                 $item->footer_sns   = 'N';
             }
@@ -297,6 +330,9 @@ class triplepopupModel extends triplepopup
                 $slot->badge_text_color = '#ffffff';
                 $slot->body_image      = '';
                 $slot->body_images     = '';
+                $slot->media_type      = 'image';
+                $slot->youtube_url     = '';
+                $slot->youtube_options = '';
                 $slot->title_text      = '';
                 $slot->sub_text        = '';
                 $slot->html_content    = '';
@@ -326,6 +362,15 @@ class triplepopupModel extends triplepopup
 
             $start = isset($slot->start_date) ? (string)$slot->start_date : '';
             $end   = isset($slot->end_date)   ? (string)$slot->end_date   : '';
+
+            // 배너 종류(이미지/유튜브)와 유튜브 재생 옵션 (관리자 편집 폼용)
+            $slot->media_type  = (isset($slot->media_type) && $slot->media_type === 'youtube') ? 'youtube' : 'image';
+            $slot->youtube_url = isset($slot->youtube_url) ? (string)$slot->youtube_url : '';
+            $ytOpt = $this->decodeYoutubeOptions(isset($slot->youtube_options) ? $slot->youtube_options : '');
+            foreach ($this->getYoutubeOptionDefaults() as $key => $default) {
+                $slot->{'yt_' . $key} = $ytOpt->{$key};
+            }
+            $slot->yt_start = $ytOpt->start;
 
             // 색상 기본값 보강 (마이그레이션 이전 행 대비)
             if (!isset($slot->badge_text_color)  || $slot->badge_text_color  === '') $slot->badge_text_color  = '#ffffff';

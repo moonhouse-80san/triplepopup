@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com -->
 <query id="deletePopupItem" action="delete">
     <tables><table name="triplepopup_slots" /></tables>
     <conditions>

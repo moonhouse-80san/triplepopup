@@ -1,9 +1,18 @@
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 (function () {
     'use strict';
 
     var COOKIE_NAME = 'rx_popup_hidden';
     var apiUrl = window.TRIPLEPOPUP_API || '/index.php?module=triplepopup&act=getTriplepopupData';
     var GAP    = 20;
+    var BASE_W = 420;
+    var BASE_H = 480;
+    // 한 화면에 보이는 배너 수(1~4)별 카드 가로 폭 — 유튜브 16:9 비율은 영상이 잘 보이도록 더 넓게
+    var CARD_W_BY_COLS = { 1: 560, 2: 480, 3: 420, 4: 380 };
+    var WIDE_W_BY_COLS = { 1: 960, 2: 720, 3: 560, 4: 440 };
+    var MIN_CARD_W   = 260;
+    var MAX_MEDIA_VH = 0.72;
+    var YT_ORIGIN    = 'https://www.youtube.com';
     var AUTO_DEFAULT = 0; // 모듈 설정의 팝업창 자동 종료 Time (초)
     // 배너의 자동 종료 초: 배너 값이 있으면 그 값(0 = 안 닫음), 비어 있으면 모듈 설정을 따른다
     function autoSecOf(item) {
@@ -15,9 +24,19 @@
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     var XPAD   = 20; // 그림자·X버튼·LogIn탭이 잘리지 않도록 뷰포트 4면 여백(px, CSS padding 과 동일)
 
+    // '가로:세로' 비율 문자열 → 세로/가로 값 (auto 등 숫자가 아니면 0)
+    function parseRatio(value) {
+        var m = /^(\d+):(\d+)$/.exec(String(value || ''));
+        if (!m) return 0;
+        var w = parseInt(m[1], 10), h = parseInt(m[2], 10);
+        return (w > 0 && h > 0) ? (h / w) : 0;
+    }
+
     function getCookie(name) {
-        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? match[2] : null;
+        try {
+            var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
+        } catch (e) { return null; }
     }
 
     // days 일간 숨김: 1 = 오늘 자정까지, 7 = 오늘 포함 7일째 자정까지
@@ -25,65 +44,124 @@
         var d = new Date();
         d.setDate(d.getDate() + days - 1);
         d.setHours(23, 59, 59, 0);
-        document.cookie = name + '=1;expires=' + d.toUTCString() + ';path=/';
+        try { document.cookie = name + '=1;expires=' + d.toUTCString() + ';path=/'; } catch (e) {}
     }
 
-    // 뷰포트 너비에 따라 한 번에 보이는 카드 수(3/2/1)와 카드 크기를 계산.
-    // maxW: 관리자에서 지정한 카드 최대 가로폭. 가용 공간에 맞춰 축소하여 가로 넘침을 방지한다.
-    function getLayout(count, maxW) {
+    // 뷰포트 너비·가로 배너 수(cols)에 따라 한 번에 보이는 카드 수와 카드 폭을 계산.
+    // widthOverride: 관리자가 '팝업 가로 크기'를 직접 지정한 경우의 카드 폭 (0 = 가로 배너 수에 맞춘 기본 폭)
+    function getLayout(count, fixedRatio, cols, widthOverride) {
         var vw = window.innerWidth;
-        if (!maxW || maxW < 180) maxW = 420;
-        if (maxW > 900) maxW = 900;
 
-        // 브레이크포인트: 1201px↑ = 3장, 769~1200px = 2장, 768px↓ = 1장
-        var maxVisible = (vw <= 768) ? 1 : (vw <= 1200 ? 2 : 3);
+        // 브레이크포인트: 1201px↑ = 설정한 수, 769~1200px = 최대 2장, 768px↓ = 1장
+        var maxVisible = (vw <= 768) ? 1 : (vw <= 1200 ? Math.min(2, cols) : cols);
         var visible = Math.min(maxVisible, count);
         if (visible < 1) visible = 1;
 
         var side  = 40; // 오버레이 좌우 여백
         var avail = vw - side;
         var cardW = Math.floor((avail - GAP * (visible - 1)) / visible);
-        if (cardW > maxW) cardW = maxW; // 설정한 최대 폭을 넘지 않음
-        if (cardW < 180)  cardW = 180;  // 최소 폭
+        while (cardW < MIN_CARD_W && visible > 1) {
+            visible--;
+            cardW = Math.floor((avail - GAP * (visible - 1)) / visible);
+        }
+        var wide = !!fixedRatio && Math.abs(fixedRatio - 9 / 16) < 0.001; // 유튜브 16:9
+        var base = widthOverride > 0 ? widthOverride : ((wide ? WIDE_W_BY_COLS : CARD_W_BY_COLS)[cols] || BASE_W);
+        if (cardW > base) cardW = base;
+        if (cardW < 180)  cardW = 180;
+
+        // 고정 비율이면 이미지 높이가 화면 높이의 일정 비율을 넘지 않도록 폭을 줄인다
+        if (fixedRatio) {
+            var byHeight = Math.floor((window.innerHeight * MAX_MEDIA_VH) / fixedRatio);
+            if (cardW > byHeight) cardW = byHeight;
+            if (cardW < 120) cardW = 120;
+        }
 
         return { visible: visible, cardW: cardW };
     }
 
-    function init() {
-        if (getCookie(COOKIE_NAME)) return;
+    // 관리자 미리보기에서 등록된 배너가 없을 때 쓰는 샘플 배너
+    function sampleItems() {
+        var colors = [['#0071e3', '#5ac8fa'], ['#ff6b35', '#f7c59f'], ['#2d6a4f', '#95d5b2']];
+        var list = [];
+        for (var i = 0; i < colors.length; i++) {
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="840" height="960" viewBox="0 0 840 960">'
+                + '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + colors[i][0] + '"/><stop offset="1" stop-color="' + colors[i][1] + '"/></linearGradient></defs>'
+                + '<rect width="840" height="960" fill="url(#g)"/></svg>';
+            list.push({
+                media_type: 'image',
+                body_image: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
+                badge_text: 'playwebon.com', badge_bg_color: colors[i][0], badge_text_color: '#ffffff',
+                footer_text: '만든이 플레이웹', footer_bg_color: colors[i][0], footer_text_color: '#ffffff'
+            });
+        }
+        return list;
+    }
+
+    // opts.preview: 관리자 미리보기 (쿠키·활성화 설정을 무시하고, opts.cfg 의 값으로 설정을 덮어씀)
+    function init(opts) {
+        opts = opts || {};
+        if (!opts.preview && getCookie(COOKIE_NAME)) return;
+        var url = apiUrl + (opts.preview ? (apiUrl.indexOf('?') > -1 ? '&' : '?') + 'tp_preview=1' : '');
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', apiUrl, true);
+        xhr.open('GET', url, true);
         xhr.onload = function () {
             if (xhr.status !== 200) return;
             try {
                 var res = JSON.parse(xhr.responseText);
                 if (res.error !== 0) return;
                 var cfg = res.config || {};
-                if (cfg.is_active === 'N') return;
                 var items = res.items;
-                if (!items || !items.length) return;
-                renderPopup(cfg, items);
+                if (opts.preview) {
+                    if (!items || !items.length) items = sampleItems();
+                    for (var k in (opts.cfg || {})) {
+                        if (Object.prototype.hasOwnProperty.call(opts.cfg, k)) cfg[k] = opts.cfg[k];
+                    }
+                } else {
+                    if (cfg.is_active === 'N') return;
+                    if (!items || !items.length) return;
+                }
+                renderPopup(cfg, items, opts);
             } catch (e) {}
         };
         xhr.send();
     }
 
-    function renderPopup(config, items) {
+    function renderPopup(config, items, opts) {
+        opts = opts || {};
         var count    = Math.min(items.length, 6);
         items        = items.slice(0, count);
         var interval = Math.max(1, parseInt(config.slide_interval, 10) || 3) * 1000;
-        var maxW     = parseInt(config.popup_width, 10) || 420;
+        var widthOverride = parseInt(config.popup_width, 10) || 0;
         var closeDays = Math.max(1, Math.min(365, parseInt(config.close_days, 10) || 1));
         UI = config.ui || {};
         AUTO_DEFAULT = Math.max(0, Math.min(3600, parseInt(config.auto_close, 10) || 0));
 
-        var layout       = getLayout(count, maxW);
-        var currentIndex = 0;
+        var fixedRatio = parseRatio(config.popup_ratio);
+        var cols = parseInt(config.popup_cols, 10);
+        if (!(cols >= 1 && cols <= 4)) cols = 3;
+        var effect = parseInt(config.popup_effect, 10);
+        if (!(effect >= 1 && effect <= 20)) effect = 1;
+
+        var layout       = getLayout(count, fixedRatio, cols, widthOverride);
         var slideTimer   = null;
+        var slidePaused  = false; // 영상 재생 중 슬라이드 멈춤
+        var focusPaused  = false; // 로그인 입력 중 슬라이드 멈춤
         var hasOverflow  = false;
+        var stepping     = false;
+        var stepTimer    = null;
+        var ytSeq        = 0;
+        var timers       = []; // 배너별 자동 종료·종료 카운트다운 타이머
+
+        var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var SLIDE_MS   = reduceMotion ? 0 : 450;
+        var entering   = !reduceMotion;
+        var enterTimer = null;
 
         var overlay = document.createElement('div');
         overlay.id  = 'triplepopup-pop-root';
+        overlay.className = 'triplepopup-pop-fx' + effect
+            + (fixedRatio ? ' triplepopup-pop-ratio-fixed' : '')
+            + (entering ? ' triplepopup-pop-entering' : '');
 
         var wrap = document.createElement('div');
         wrap.className = 'triplepopup-pop-wrap';
@@ -100,7 +178,9 @@
         track.style.gap = GAP + 'px';
 
         for (var i = 0; i < count; i++) {
-            track.appendChild(buildCard(items[i], layout.cardW, 480 / 420, function () { syncHeights(); }, function (c) { removeCard(c); }));
+            var cell = buildCard(items[i], layout.cardW, BASE_H / BASE_W, function () { syncHeights(); }, function (c) { removeCell(c); });
+            track.appendChild(cell);
+            startAutoClose(cell);
         }
         viewport.appendChild(track);
         stage.appendChild(viewport);
@@ -146,21 +226,154 @@
             document.body.appendChild(snsScript);
         }
 
-        // 가로(카드 폭)만 지정하고 세로는 이미지/HTML 콘텐츠 높이에 맞춰 자동.
-        // 이미지에는 CSS(max-height:72vh)로 상한만 두고, JS에서 강제 height를 넣지 않는다.
-        function syncHeights() {
-            var cards = track.querySelectorAll('.triplepopup-pop-card');
-            var maxH = 0;
+        /* ---------- 유튜브 ---------- */
+        function isVideoCard(card) {
+            return !!(card && card._tpItem && card._tpItem.media_type === 'youtube' && card._tpItem.youtube_id);
+        }
+
+        // 영상이 재생 중이고 '재생 중 슬라이드 멈춤'이 켜져 있으면 자동 슬라이드를 멈춘다
+        function updateSlidePause() {
+            var cards = track.children, paused = false;
             for (var i = 0; i < cards.length; i++) {
-                // 이전에 강제 지정했던 media height 제거 → 콘텐츠 자연 높이 사용
-                var media = cards[i].querySelector('.triplepopup-pop-media');
-                if (media) media.style.height = '';
+                var opt = cards[i]._tpItem ? (cards[i]._tpItem.youtube || {}) : {};
+                if (cards[i]._tpPlaying && opt.pause_slide) { paused = true; break; }
+            }
+            if (paused === slidePaused) return;
+            slidePaused = paused;
+            restartTimer();
+        }
+
+        function mountVideo(card) {
+            if (card._tpFrame) return;
+            var item = card._tpItem, opt = item.youtube || {};
+            var holder = card.querySelector('.triplepopup-pop-frame');
+            if (!holder) return;
+
+            var q = ['playsinline=1', 'rel=0', 'enablejsapi=1',
+                     'autoplay=' + (opt.autoplay ? 1 : 0),
+                     'mute=' + ((opt.mute || opt.autoplay) ? 1 : 0),
+                     'controls=' + (opt.controls ? 1 : 0)];
+            if (opt.loop) { q.push('loop=1'); q.push('playlist=' + item.youtube_id); }
+            if (opt.start > 0) q.push('start=' + parseInt(opt.start, 10));
+            if (/^https?:/.test(window.location.protocol)) q.push('origin=' + encodeURIComponent(window.location.origin));
+
+            var frame = document.createElement('iframe');
+            frame.id = 'triplepopup-yt-' + (++ytSeq);
+            frame.title = item.badge_text || item.footer_text || 'YouTube';
+            frame.setAttribute('frameborder', '0');
+            frame.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+            frame.setAttribute('allowfullscreen', 'allowfullscreen');
+            // 재생 상태(재생/일시정지)를 받기 위해 플레이어에 구독 요청
+            frame.addEventListener('load', function () {
+                try {
+                    var win = frame.contentWindow;
+                    win.postMessage(JSON.stringify({ event: 'listening', id: frame.id, channel: 'widget' }), YT_ORIGIN);
+                    win.postMessage(JSON.stringify({ event: 'command', func: 'addEventListener', args: ['onStateChange'], id: frame.id, channel: 'widget' }), YT_ORIGIN);
+                } catch (e) {}
+            });
+            frame.src = YT_ORIGIN + '/embed/' + encodeURIComponent(item.youtube_id) + '?' + q.join('&');
+            holder.appendChild(frame);
+            card._tpFrame = frame;
+        }
+
+        function unmountVideo(card) {
+            if (!card._tpFrame) return;
+            if (card._tpFrame.parentNode) card._tpFrame.parentNode.removeChild(card._tpFrame);
+            card._tpFrame = null;
+            card._tpPlaying = false;
+        }
+
+        // 화면에 보이는 카드의 영상만 재생 준비(나머지는 제거해 소리·트래픽을 막는다)
+        function syncVideos() {
+            var cards = track.children;
+            var to = hasOverflow ? layout.visible : cards.length;
+            for (var i = 0; i < cards.length; i++) {
+                if (!isVideoCard(cards[i])) continue;
+                if (i < to) mountVideo(cards[i]);
+                else unmountVideo(cards[i]);
+            }
+            sizeFrames();
+            updateSlidePause();
+        }
+
+        // '영상 꽉 채우기': 칸 비율과 영상 비율이 다르면 영상을 확대해 여백 없이 채운다
+        function sizeFrames() {
+            var cards = track.children;
+            for (var i = 0; i < cards.length; i++) {
+                if (!isVideoCard(cards[i])) continue;
+                var holder = cards[i].querySelector('.triplepopup-pop-frame');
+                var media  = cards[i].querySelector('.triplepopup-pop-media');
+                if (!holder || !media) continue;
+                var item = cards[i]._tpItem, opt = item.youtube || {};
+                var w = media.clientWidth, h = media.clientHeight;
+                if (!opt.cover || !w || !h) {
+                    holder.style.width = '100%';
+                    holder.style.height = '100%';
+                    continue;
+                }
+                var vr = item.youtube_shorts ? (9 / 16) : (16 / 9);
+                var fw, fh;
+                if (w / h < vr) { fh = h; fw = h * vr; } else { fw = w; fh = w / vr; }
+                holder.style.width  = Math.ceil(fw) + 'px';
+                holder.style.height = Math.ceil(fh) + 'px';
+            }
+        }
+
+        function onPlayerMessage(e) {
+            if (e.origin !== YT_ORIGIN) return;
+            var data;
+            try { data = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data; } catch (err) { return; }
+            if (!data) return;
+            var state = null;
+            if (data.event === 'onStateChange' && typeof data.info === 'number') state = data.info;
+            else if (data.event === 'infoDelivery' && data.info && typeof data.info.playerState === 'number') state = data.info.playerState;
+            if (state === null) return;
+            var cards = track.children;
+            for (var i = 0; i < cards.length; i++) {
+                if (cards[i]._tpFrame && cards[i]._tpFrame.contentWindow === e.source) {
+                    cards[i]._tpPlaying = (state === 1 || state === 3); // 재생 중 · 버퍼링
+                    break;
+                }
+            }
+            updateSlidePause();
+        }
+        window.addEventListener('message', onPlayerMessage);
+        overlay._tpDestroy = function () { destroy(); };
+
+        function destroy() {
+            clearInterval(slideTimer);
+            clearTimeout(stepTimer);
+            clearTimeout(resizeTimer);
+            clearTimeout(enterTimer);
+            for (var i = 0; i < timers.length; i++) clearInterval(timers[i]);
+            if (cardObserver) cardObserver.disconnect();
+            window.removeEventListener('resize', onResize);
+            window.removeEventListener('message', onPlayerMessage);
+            overlay.parentNode && overlay.parentNode.removeChild(overlay);
+        }
+
+        // 가로(카드 폭)만 지정하고 세로는 이미지/HTML 콘텐츠 높이에 맞춰 자동. 고정 비율·영상은 비율대로 높이를 준다.
+        function sizeMedias(cardW) {
+            var maxH   = Math.round(window.innerHeight * MAX_MEDIA_VH);
+            var medias = track.querySelectorAll('.triplepopup-pop-media');
+            for (var i = 0; i < medias.length; i++) {
+                var isVid = medias[i].classList.contains('triplepopup-pop-video');
+                if (!fixedRatio && !isVid) { medias[i].style.height = ''; continue; } // 원본 비율: 이미지 자연 높이 사용
+                var ratio = fixedRatio || parseFloat(medias[i].getAttribute('data-ratio'));
+                if (!ratio || ratio <= 0) ratio = BASE_H / BASE_W;
+                medias[i].style.height = Math.min(Math.round(cardW * ratio), maxH) + 'px';
+            }
+            sizeFrames();
+        }
+
+        function syncHeights() {
+            if (!overlay.parentNode) return;
+            sizeMedias(layout.cardW);
+            var cells = track.children;
+            var maxH = 0;
+            for (var i = 0; i < cells.length; i++) {
                 // 로그인 탭이 카드 밖에 있으므로 cell 전체 높이 기준
-                var cell = cards[i].closest ? cards[i].closest('.triplepopup-pop-cell') : cards[i].parentNode;
-                var h = (cell && cell.classList && cell.classList.contains('triplepopup-pop-cell'))
-                    ? cell.offsetHeight
-                    : cards[i].offsetHeight;
-                if (h > maxH) maxH = h;
+                if (cells[i].offsetHeight > maxH) maxH = cells[i].offsetHeight;
             }
             if (maxH > 0) viewport.style.height = (maxH + XPAD * 2) + 'px';
         }
@@ -241,120 +454,192 @@
 
         function applyLayout() {
             applyDim();
-            layout = getLayout(count, maxW);
+            layout = getLayout(count, fixedRatio, cols, widthOverride);
             var vwTotal = layout.cardW * layout.visible + GAP * (layout.visible - 1);
+
+            // 보이는 수보다 카드가 많을 때만 좌우 버튼 노출 + 자동 슬라이드(무한 반복)
+            hasOverflow = count > layout.visible;
 
             stage.style.width     = vwTotal + 'px';
             viewport.style.width   = (vwTotal + XPAD * 2) + 'px';
             track.style.width      = (layout.cardW * count + GAP * (count - 1)) + 'px';
             bottom.style.width     = vwTotal + 'px';
 
-            var cards = track.querySelectorAll('.triplepopup-pop-card');
-            for (var c = 0; c < cards.length; c++) {
-                cards[c].style.width    = layout.cardW + 'px';
-                cards[c].style.minWidth = layout.cardW + 'px';
-                // 로그인 패널이 카드보다 넓어 래퍼가 늘어나면 카드가 오른쪽으로 밀리므로 래퍼 폭도 고정
-                var cellBox = cards[c].parentNode;
-                if (cellBox && cellBox.classList && cellBox.classList.contains('triplepopup-pop-cell')) {
-                    cellBox.style.width    = layout.cardW + 'px';
-                    cellBox.style.minWidth = layout.cardW + 'px';
-                    cellBox.style.maxWidth = layout.cardW + 'px';
+            var cells = track.children;
+            for (var c = 0; c < cells.length; c++) {
+                var card = cells[c].querySelector('.triplepopup-pop-card');
+                if (card) {
+                    card.style.width    = layout.cardW + 'px';
+                    card.style.minWidth = layout.cardW + 'px';
                 }
+                // 로그인 패널이 카드보다 넓어 래퍼가 늘어나면 카드가 오른쪽으로 밀리므로 래퍼 폭도 고정
+                cells[c].style.width    = layout.cardW + 'px';
+                cells[c].style.minWidth = layout.cardW + 'px';
+                cells[c].style.maxWidth = layout.cardW + 'px';
             }
 
             syncHeights();
 
-            // 보이는 수보다 카드가 많을 때만 좌우 버튼 노출 + 자동 슬라이드
-            hasOverflow = count > layout.visible;
             prevBtn.style.display = hasOverflow ? 'flex' : 'none';
             nextBtn.style.display = hasOverflow ? 'flex' : 'none';
 
-            moveTo(currentIndex, false);
+            // 쉬는 상태에서는 항상 맨 앞 카드부터 보이도록 위치를 되돌린다
+            clearTimeout(stepTimer);
+            stepping = false;
+            track.style.transition = 'none';
+            track.style.transform  = 'translateX(0)';
 
             if (dragX || dragY) {
                 var pos = clampOffset(dragX, dragY);
                 setOffset(pos.x, pos.y);
             }
+            syncVideos();
         }
 
-        // 개별 배너 닫기(X): 해당 카드만 제거하고 남은 카드로 다시 배치, 전부 닫히면 팝업 종료
-        function removeCard(card) {
-            var cell = card.parentNode; // 카드 + X 버튼을 감싼 래퍼
-            if (cell && cell.parentNode) cell.parentNode.removeChild(cell);
+        // 개별 배너 닫기(X)·자동 종료: 해당 카드만 제거하고 남은 카드로 다시 배치, 전부 닫히면 팝업 종료
+        function removeCell(cell) {
+            if (!cell.parentNode) return;
+            unmountVideo(cell);
+            cell.parentNode.removeChild(cell);
             count--;
-            if (count < 1) {
-                clearInterval(slideTimer);
-                overlay.parentNode && overlay.parentNode.removeChild(overlay);
-                return;
-            }
+            if (count < 1) { destroy(); return; }
             applyLayout();
             restartTimer();
         }
 
-        function maxIndex() { return Math.max(0, count - layout.visible); }
-
-        function moveTo(idx, animate) {
-            track.style.transition = (animate === false)
-                ? 'none'
-                : 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)';
-            currentIndex = Math.max(0, Math.min(idx, maxIndex()));
-            track.style.transform = 'translateX(-' + (currentIndex * (layout.cardW + GAP)) + 'px)';
+        // 배너별 자동 종료: 남은 초는 X 버튼 옆 숫자로 표시하고, 0 이 되면 이 배너만 닫는다
+        function startAutoClose(cell) {
+            var left = autoSecOf(cell._tpItem);
+            if (left < 1) return;
+            var counter = cell.querySelector('.triplepopup-pop-card-count');
+            var tm = setInterval(function () {
+                if (!cell.isConnected) { clearInterval(tm); return; } // 이미 닫힘
+                if (--left < 1) { clearInterval(tm); removeCell(cell); return; }
+                if (counter) counter.textContent = left;
+            }, 1000);
+            timers.push(tm);
         }
 
-        function goNext() { moveTo(currentIndex >= maxIndex() ? 0 : currentIndex + 1, true); }
-        function goPrev() { moveTo(currentIndex <= 0 ? maxIndex() : currentIndex - 1, true); }
+        /* ---------- 무한 반복 슬라이드: 맨 앞 카드를 맨 뒤로(또는 반대로) 돌려 끝없이 이어 붙인다 ---------- */
+        function slideMs() { return SLIDE_MS ? 'transform ' + SLIDE_MS + 'ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none'; }
+
+        function goNext() {
+            if (!hasOverflow || stepping) return;
+            stepping = true;
+            track.style.transition = slideMs();
+            track.style.transform  = 'translateX(-' + (layout.cardW + GAP) + 'px)';
+            stepTimer = setTimeout(function () {
+                var first = track.firstElementChild;
+                unmountVideo(first); // 노드를 옮기면 영상이 다시 로드되므로 먼저 걷어 낸다
+                track.style.transition = 'none';
+                track.appendChild(first);
+                track.style.transform = 'translateX(0)';
+                void track.offsetWidth;
+                stepping = false;
+                syncVideos();
+            }, SLIDE_MS + 30);
+        }
+
+        function goPrev() {
+            if (!hasOverflow || stepping) return;
+            stepping = true;
+            track.style.transition = 'none';
+            track.insertBefore(track.lastElementChild, track.firstElementChild);
+            track.style.transform = 'translateX(-' + (layout.cardW + GAP) + 'px)';
+            void track.offsetWidth;
+            track.style.transition = slideMs();
+            track.style.transform  = 'translateX(0)';
+            stepTimer = setTimeout(function () {
+                stepping = false;
+                syncVideos();
+            }, SLIDE_MS + 30);
+        }
 
         function restartTimer() {
             clearInterval(slideTimer);
-            if (hasOverflow) slideTimer = setInterval(goNext, interval);
+            if (hasOverflow && !slidePaused && !focusPaused && !entering) slideTimer = setInterval(goNext, interval);
+        }
+
+        // 등장 효과: 처음 화면에 보이는 카드만 효과 대상으로 표시 (나머지는 효과가 끝날 때까지 숨김)
+        function markEntering() {
+            var cells = track.children;
+            var n = hasOverflow ? layout.visible : cells.length;
+            for (var k = 0; k < n; k++) {
+                var cell = cells[k];
+                if (!cell) continue;
+                var pos = (n === 1) ? 'c' : (k === 0 ? 'l' : (k === n - 1 ? 'r' : 'c'));
+                cell.classList.add('triplepopup-pop-in');
+                cell.classList.add('triplepopup-pop-in-' + pos);
+                cell.style.setProperty('--tpop-i', k);
+            }
+        }
+
+        function finishEnter() {
+            if (!entering) return;
+            entering = false;
+            clearTimeout(enterTimer);
+            overlay.classList.remove('triplepopup-pop-entering');
+            var marked = track.querySelectorAll('.triplepopup-pop-in');
+            for (var m = 0; m < marked.length; m++) {
+                marked[m].classList.remove('triplepopup-pop-in', 'triplepopup-pop-in-l', 'triplepopup-pop-in-c', 'triplepopup-pop-in-r');
+            }
+            restartTimer();
+        }
+
+        var cardObserver = null;
+        var resizeTimer;
+        function onResize() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                finishEnter();
+                applyLayout();
+                restartTimer();
+            }, 100);
         }
 
         applyLayout();
-        restartTimer();
+        if (entering) {
+            markEntering();
+            enterTimer = setTimeout(finishEnter, 1400);
+        } else {
+            restartTimer();
+        }
 
         // 카드 높이가 나중에 바뀌어도(SNS 로그인 위젯 로딩, 이미지 로딩, 오류 메시지 등) 잘리지 않고 팝업이 자동으로 늘어나게 함
         if (window.ResizeObserver) {
-            var cardObserver = new ResizeObserver(function () { syncHeights(); });
-            var observed = track.querySelectorAll('.triplepopup-pop-cell');
-            if (!observed.length) observed = track.querySelectorAll('.triplepopup-pop-card');
-            for (var o = 0; o < observed.length; o++) cardObserver.observe(observed[o]);
+            cardObserver = new ResizeObserver(function () { syncHeights(); });
+            for (var o = 0; o < track.children.length; o++) cardObserver.observe(track.children[o]);
         } else {
             setTimeout(syncHeights, 600);
             setTimeout(syncHeights, 2000);
         }
 
-        var resizeTimer;
-        window.addEventListener('resize', function () {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function () {
-                applyLayout();
-                restartTimer();
-            }, 100);
-        });
+        window.addEventListener('resize', onResize);
 
         // 로그인 입력 중에는 자동 슬라이드를 멈춰 입력하던 카드가 넘어가지 않게 함
         wrap.addEventListener('focusin', function (e) {
-            if (e.target.closest && e.target.closest('.triplepopup-pop-login')) clearInterval(slideTimer);
+            if (e.target.closest && e.target.closest('.triplepopup-pop-login')) { focusPaused = true; restartTimer(); }
         });
         wrap.addEventListener('focusout', function (e) {
-            if (e.target.closest && e.target.closest('.triplepopup-pop-login') && !(e.relatedTarget && wrap.contains(e.relatedTarget))) restartTimer();
+            if (e.target.closest && e.target.closest('.triplepopup-pop-login') && !(e.relatedTarget && wrap.contains(e.relatedTarget))) {
+                focusPaused = false;
+                restartTimer();
+            }
         });
 
-        prevBtn.addEventListener('click', function () { goPrev(); restartTimer(); });
-        nextBtn.addEventListener('click', function () { goNext(); restartTimer(); });
+        prevBtn.addEventListener('click', function () { finishEnter(); focusPaused = false; goPrev(); restartTimer(); });
+        nextBtn.addEventListener('click', function () { finishEnter(); focusPaused = false; goNext(); restartTimer(); });
 
         todayBtn.addEventListener('click', function () {
-            setCookieForDays(COOKIE_NAME, closeDays);
-            clearInterval(slideTimer);
-            overlay.parentNode && overlay.parentNode.removeChild(overlay);
+            if (!opts.preview) setCookieForDays(COOKIE_NAME, closeDays);
+            destroy();
         });
 
         closeBtn.addEventListener('click', function () {
-            clearInterval(slideTimer);
-            overlay.parentNode && overlay.parentNode.removeChild(overlay);
+            destroy();
         });
 
-        // 자동 종료는 배너별로 동작한다(buildCard). 모든 배너가 자동으로 닫히는 경우에만
+        // 자동 종료는 배너별로 동작한다(startAutoClose). 모든 배너가 자동으로 닫히는 경우에만
         // 팝업이 끝날 때까지 남은 시간을 '닫기 (5) ×' 형태로 표시한다 (표시 전용, 쿠키 없음)
         var autoLeft = 0;
         var allAuto  = items.length > 0;
@@ -368,9 +653,11 @@
                 if (!overlay.parentNode || --autoLeft < 1) { clearInterval(autoTimer); return; }
                 closeBtn.innerHTML = esc(t('close', '닫기')) + ' (' + autoLeft + ') &times;';
             }, 1000);
+            timers.push(autoTimer);
         }
     }
 
+    // 카드 1장 = 카드 + (로그인 탭) + X 버튼 + (자동 종료 숫자)를 감싼 cell 을 만들어 돌려준다
     function buildCard(item, w, baseRatio, onImgLoad, onClose) {
         var card = document.createElement('div');
         card.className    = 'triplepopup-pop-card';
@@ -383,7 +670,7 @@
             card.style.border = borderW + 'px solid ' + item.border_color;
         }
 
-        // 배너 그림자 (기본 표시, 'N' 이면 숨김 — 투명 배경에서 카드 경계가 보이지 않게)
+        // 배너 그림자 (기본 숨김, 'Y' 이면 표시)
         if (item.card_shadow !== 'Y') card.style.boxShadow = 'none';
 
         // 이 배너의 배경 어둡기(0~100%, 기본 42) — 카드에 기록해 두고 팝업 전체 배경 계산에 사용
@@ -397,28 +684,45 @@
             card.style.background = toRgba(htmlBg, htmlTrans);
         }
 
-        var hasImage = !!(item.body_image);
+        var isVideo  = (item.media_type === 'youtube' && !!item.youtube_id);
+        var hasImage = !isVideo && !!item.body_image;
 
-        if (hasImage) {
-            // ── 이미지 있는 카드: 배지·타이틀을 이미지 위 오버레이로 표시 ──
+        if (isVideo || hasImage) {
+            // ── 이미지·영상 카드: 배지·타이틀을 미디어 위 오버레이로 표시 ──
             var media = document.createElement('div');
             media.className = 'triplepopup-pop-media';
             media.setAttribute('data-ratio', baseRatio);
-            if (item.click_url) {
-                media.classList.add('triplepopup-pop-clickable');
-                media.addEventListener('click', makeOpener(item.click_url, item.click_target));
-            }
 
-            var img = document.createElement('img');
-            img.alt = item.title_text || item.badge_text || '';
-            img.onload = function () {
-                if (img.naturalWidth && img.naturalHeight) {
-                    media.setAttribute('data-ratio', img.naturalHeight / img.naturalWidth);
-                    if (typeof onImgLoad === 'function') onImgLoad();
+            if (isVideo) {
+                // 영상: 썸네일(poster) 위에 iframe 칸을 두고, 실제 iframe 은 화면에 보일 때 JS 가 붙인다
+                media.classList.add('triplepopup-pop-video');
+                media.setAttribute('data-ratio', item.youtube_shorts ? (16 / 9) : (9 / 16));
+                var poster = document.createElement('img');
+                poster.className = 'triplepopup-pop-poster';
+                poster.alt = '';
+                poster.onerror = function () { if (poster.parentNode) poster.parentNode.removeChild(poster); };
+                poster.src = 'https://i.ytimg.com/vi/' + encodeURIComponent(item.youtube_id) + '/hqdefault.jpg';
+                media.appendChild(poster);
+                var holder = document.createElement('div');
+                holder.className = 'triplepopup-pop-frame';
+                media.appendChild(holder);
+            } else {
+                if (item.click_url) {
+                    media.classList.add('triplepopup-pop-clickable');
+                    media.addEventListener('click', makeOpener(item.click_url, item.click_target));
                 }
-            };
-            img.src = item.body_image;
-            media.appendChild(img);
+
+                var img = document.createElement('img');
+                img.alt = item.title_text || item.badge_text || '';
+                img.onload = function () {
+                    if (img.naturalWidth && img.naturalHeight) {
+                        media.setAttribute('data-ratio', img.naturalHeight / img.naturalWidth);
+                        if (typeof onImgLoad === 'function') onImgLoad();
+                    }
+                };
+                img.src = item.body_image;
+                media.appendChild(img);
+            }
 
             if (item.badge_text) {
                 var badge = document.createElement('span');
@@ -429,7 +733,8 @@
                 media.appendChild(badge);
             }
 
-            if (item.title_text || item.sub_text) {
+            // 유튜브 배너에는 이미지 위 타이틀·서브문구를 표시하지 않는다
+            if (!isVideo && (item.title_text || item.sub_text)) {
                 var overlay = document.createElement('div');
                 overlay.className = 'triplepopup-pop-overlay';
                 if (item.title_text) {
@@ -534,59 +839,38 @@
             card.appendChild(footer);
         }
 
-        // 로그인 탭은 카드 테두리 바깥(아래)에 두기 위해 cell 에 붙임
-        var authBox = null;
+        // 카드는 overflow:hidden 이라 X 버튼·로그인 탭이 밖으로 나가지 못하므로, 같은 래퍼(cell)에 나란히 둔다
+        var cell = document.createElement('div');
+        cell.className = 'triplepopup-pop-cell';
+        cell._tpItem = item;
+        cell.appendChild(card);
+
+        // 로그인 탭은 카드 테두리 바깥(아래)에 둔다
         if (item.footer_login === 'Y' || item.footer_sns === 'Y') {
-            authBox = buildAuthBox(item, borderW);
+            cell.appendChild(buildAuthBox(item, borderW));
         }
 
         // 우측 상단 X 버튼 — 이 배너만 닫기
-        if (typeof onClose === 'function') {
-            var xBtn = document.createElement('button');
-            xBtn.type = 'button';
-            xBtn.className = 'triplepopup-pop-card-close';
-            xBtn.setAttribute('aria-label', t('banner_close', '이 배너 닫기'));
-            xBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
-            xBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                onClose(card);
-            });
-            // 카드는 overflow:hidden 이라 버튼이 밖으로 나가지 못하므로, 카드와 버튼을 같은 래퍼에 나란히 둔다
-            var cell = document.createElement('div');
-            cell.className = 'triplepopup-pop-cell';
-            cell.appendChild(card);
-            if (authBox) cell.appendChild(authBox);
-            cell.appendChild(xBtn);
+        var xBtn = document.createElement('button');
+        xBtn.type = 'button';
+        xBtn.className = 'triplepopup-pop-card-close';
+        xBtn.setAttribute('aria-label', t('banner_close', '이 배너 닫기'));
+        xBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
+        xBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            onClose(cell);
+        });
+        cell.appendChild(xBtn);
 
-            // 배너별 자동 종료: 이 배너만 닫고, 남은 초는 X 버튼 옆에 표시한다
-            var autoSec = autoSecOf(item);
-            if (autoSec > 0) {
-                var badge = document.createElement('span');
-                badge.className   = 'triplepopup-pop-card-count';
-                badge.textContent = autoSec;
-                cell.appendChild(badge);
-                var cardTimer = setInterval(function () {
-                    if (!cell.isConnected) { clearInterval(cardTimer); return; } // 이미 닫힘
-                    autoSec--;
-                    if (autoSec < 1) {
-                        clearInterval(cardTimer);
-                        onClose(card);
-                        return;
-                    }
-                    badge.textContent = autoSec;
-                }, 1000);
-            }
-            return cell;
+        // 배너별 자동 종료 남은 시간 표시 칸 (숫자는 팝업 쪽 타이머가 갱신)
+        var autoSec = autoSecOf(item);
+        if (autoSec > 0) {
+            var counter = document.createElement('span');
+            counter.className   = 'triplepopup-pop-card-count';
+            counter.textContent = autoSec;
+            cell.appendChild(counter);
         }
-
-        if (authBox) {
-            var wrapOnly = document.createElement('div');
-            wrapOnly.className = 'triplepopup-pop-cell';
-            wrapOnly.appendChild(card);
-            wrapOnly.appendChild(authBox);
-            return wrapOnly;
-        }
-        return card;
+        return cell;
     }
 
     // 로그인·SNS 로그인 영역 — 카드 테두리 아래 탭(LogIn, 테두리색)으로 접고 펼침
@@ -754,9 +1038,26 @@
         };
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
+    // 관리자 화면에서 실제 팝업으로 미리보기: window.triplepopupOpen({ preview: true, cfg: { popup_effect: 3, ... } })
+    window.triplepopupOpen = function (opts) {
+        var old = document.getElementById('triplepopup-pop-root');
+        if (old && old._tpDestroy) old._tpDestroy();
+        init(opts || {});
+    };
+
+    // 관리자 화면(관리자 주소·모듈 관리 화면)에서는 자동으로 띄우지 않는다 — 미리보기 버튼(triplepopupOpen)으로만 열린다
+    function isAdminScreen() {
+        return !!(document.querySelector('.triplepopup-admin')
+            || /(^|[?&])module=admin(&|$)/.test(window.location.search)
+            || /(^|[?&])act=disp\w*Admin/i.test(window.location.search)
+            || /^\/admin(\/|$)/.test(window.location.pathname));
+    }
+
+    if (!window.TRIPLEPOPUP_MANUAL) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () { if (!isAdminScreen()) init(); });
+        } else if (!isAdminScreen()) {
+            init();
+        }
     }
 }());

@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com -->
 <module>
     <actions>
-        <action name="dispTriplepopupAdminIndex"      type="view"       admin_auth="manager" admin_index="true" />
-        <action name="procTriplepopupAdminSaveConfig" type="controller" admin_auth="manager" />
-        <action name="procTriplepopupAdminSaveModules" type="controller" admin_auth="manager" />
-        <action name="procTriplepopupAdminSaveOrder"  type="controller" admin_auth="manager" check_csrf="false" />
-        <action name="procTriplepopupAdminSaveItem"   type="controller" admin_auth="manager" />
-        <action name="procTriplepopupAdminDeleteItem" type="controller" admin_auth="manager" />
-        <action name="procTriplepopupAdminToggleItem" type="controller" admin_auth="manager" />
-        <action name="getTriplepopupData"             type="view"       check_csrf="false" />
+        <action name="dispTriplepopupAdminIndex"        type="view"       admin_auth="manager" admin_index="true" />
+        <action name="procTriplepopupAdminSaveSettings" type="controller" admin_auth="manager" check_csrf="false" />
+        <action name="procTriplepopupAdminSaveOrder"    type="controller" admin_auth="manager" check_csrf="false" />
+        <action name="procTriplepopupAdminSaveRatio"    type="controller" admin_auth="manager" check_csrf="false" />
+        <action name="procTriplepopupAdminSaveEffect"   type="controller" admin_auth="manager" check_csrf="false" />
+        <action name="procTriplepopupAdminSaveCols"     type="controller" admin_auth="manager" check_csrf="false" />
+        <action name="procTriplepopupAdminSaveItem"     type="controller" admin_auth="manager" />
+        <action name="procTriplepopupAdminDeleteItem"   type="controller" admin_auth="manager" />
+        <action name="procTriplepopupAdminToggleItem"   type="controller" admin_auth="manager" />
+        <action name="getTriplepopupData"               type="view"       check_csrf="false" />
     </actions>
 </module>

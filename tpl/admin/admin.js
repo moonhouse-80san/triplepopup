@@ -1,3 +1,4 @@
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 (function () {
     'use strict';
 
@@ -311,7 +312,11 @@
         }
 
         function applyPreviewRatio(card, w, h) {
-            if (!card || !w || !h) return;
+            if (!card) return;
+            var g = globalRatio();
+            if (g) { w = g.w; h = g.h; }
+            if (!w || !h) return;
+            card.setAttribute('data-nat', w + ' / ' + h);
             var media = card.querySelector('.triplepopup-preview-media');
             if (media) media.style.aspectRatio = w + ' / ' + h;
         }
@@ -397,8 +402,9 @@
                 if (!form.querySelector('.triplepopup-preview-card')) return;
                 updatePreview(form);
                 bindPreviewImage(form);
-                form.addEventListener('input', function () { updatePreview(form); });
-                form.addEventListener('change', function () { updatePreview(form); });
+                updateMedia(form);
+                form.addEventListener('input', function () { updatePreview(form); updateMedia(form); });
+                form.addEventListener('change', function () { updatePreview(form); updateMedia(form); });
                 // 다국어 해제(×) 버튼 클릭 후 반영
                 form.addEventListener('click', function (e) {
                     if (e.target && e.target.closest && e.target.closest('.g11n')) {
@@ -407,6 +413,561 @@
                 });
             })(pvForms[p]);
         }
+
+        /* ---------- 팝업 비율 · 가로 배너 수 (선택 즉시 저장) ---------- */
+        function globalRatio() {
+            var on = root.querySelector('.triplepopup-ratio-input:checked');
+            var item = on && on.closest ? on.closest('.triplepopup-ratio-item') : null;
+            if (!item) return null;
+            var w = parseFloat(item.getAttribute('data-w')), h = parseFloat(item.getAttribute('data-h'));
+            if (!w || !h) return null;
+            return { w: w, h: h, label: on.value, rec: item.getAttribute('data-rec') || '' };
+        }
+
+        function colsCurrent() {
+            var on = root.querySelector('.triplepopup-cols-input:checked');
+            var n = on ? parseInt(on.value, 10) : 3;
+            return (n >= 1 && n <= 4) ? n : 3;
+        }
+
+        function refreshRatio() {
+            var g = globalRatio();
+            var items = root.querySelectorAll('.triplepopup-ratio-item');
+            for (var i = 0; i < items.length; i++) {
+                var inp = items[i].querySelector('.triplepopup-ratio-input');
+                items[i].classList.toggle('triplepopup-is-checked', !!(inp && inp.checked));
+            }
+            var minis = root.querySelectorAll('.triplepopup-ratio-mini');
+            var autoRatios = ['7 / 8', '3 / 4', '1 / 1'];
+            var cols = colsCurrent();
+            var colItems = root.querySelectorAll('.triplepopup-cols-item');
+            for (var ci = 0; ci < colItems.length; ci++) {
+                var cinp = colItems[ci].querySelector('.triplepopup-cols-input');
+                colItems[ci].classList.toggle('triplepopup-is-checked', !!(cinp && cinp.checked));
+            }
+            var maxMini = [0, 132, 110, 84, 60][cols];
+            // '팝업 가로 크기'를 직접 지정했으면 그 폭이 모든 가로 배너 수에 적용된다 (popup.js 와 같은 규칙)
+            var wInput  = root.querySelector('input[name="popup_width"]');
+            var ovr     = wInput ? Math.max(0, parseInt(wInput.value, 10) || 0) : 0;
+            var widths  = ovr > 0 ? [0, ovr, ovr, ovr, ovr] : ((g && g.label === '16:9') ? [0, 960, 720, 560, 440] : [0, 560, 480, 420, 380]);
+            var comma   = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+            for (var cw = 0; cw < colItems.length; cw++) {
+                var cin = colItems[cw].querySelector('.triplepopup-cols-input');
+                var cn  = cin ? parseInt(cin.value, 10) : 0;
+                var metas = colItems[cw].querySelectorAll('.triplepopup-ratio-meta');
+                if (!widths[cn] || metas.length < 2) continue;
+                metas[0].textContent = '전체 폭 ' + comma(widths[cn] * cn + 20 * (cn - 1)) + 'px';
+                metas[1].textContent = '배너 ' + widths[cn] + 'px';
+            }
+            var cardPx  = widths[cols];
+            var totalPx = cardPx * cols + 20 * (cols - 1);
+            var elCols  = root.querySelector('.triplepopup-cols-cur');
+            var elTotal = root.querySelector('.triplepopup-cols-total');
+            var elCard  = root.querySelector('.triplepopup-cols-card');
+            if (elCols)  elCols.textContent  = cols + '개';
+            if (elTotal) elTotal.textContent = comma(totalPx) + 'px';
+            if (elCard)  elCard.textContent  = cardPx + 'px';
+            for (var m = 0; m < minis.length; m++) {
+                var pic = minis[m].querySelector('i');
+                var r = g ? (g.w / g.h) : 0;
+                var w = !g ? Math.min(80, maxMini) : Math.max(34, Math.min(maxMini, Math.round(158 * r)));
+                minis[m].hidden = m >= cols;
+                minis[m].style.width = w + 'px';
+                if (pic) pic.style.aspectRatio = g ? (g.w + ' / ' + g.h) : autoRatios[m % 3];
+            }
+            var cur = root.querySelector('.triplepopup-ratio-cur');
+            var rec = root.querySelector('.triplepopup-ratio-rec');
+            var recLine = root.querySelector('.triplepopup-ratio-recline');
+            if (cur) cur.textContent = g ? g.label : '원본 크기 그대로';
+            if (rec) rec.textContent = g ? g.rec : '';
+            if (recLine) recLine.hidden = !g;
+            var sizes = root.querySelectorAll('.triplepopup-rec-size');
+            for (var s = 0; s < sizes.length; s++) sizes[s].textContent = g ? (g.rec + 'px') : (sizes[s].getAttribute('data-auto') || '840 × 960px');
+            var recHints = root.querySelectorAll('.triplepopup-rec-hint');
+            for (var rh = 0; rh < recHints.length; rh++) recHints[rh].hidden = (recHints[rh].getAttribute('data-mode') === 'fixed') !== !!g;
+            var ratios = root.querySelectorAll('.triplepopup-rec-ratio');
+            for (var t = 0; t < ratios.length; t++) ratios[t].textContent = g ? g.label : '7:8';
+            setTimeout(syncAllMedia, 0);
+            var cards = root.querySelectorAll('.triplepopup-preview-card');
+            for (var c = 0; c < cards.length; c++) {
+                var media = cards[c].querySelector('.triplepopup-preview-media');
+                var img = cards[c].querySelector('.triplepopup-pv-img');
+                if (!media) continue;
+                if (g) media.style.aspectRatio = g.w + ' / ' + g.h;
+                else if (img && img.naturalWidth) media.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+                else media.style.aspectRatio = '';
+            }
+        }
+        function showStatus(selector, text, bad) {
+            var el = root.querySelector(selector);
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('triplepopup-is-bad', !!bad);
+            el.classList.add('triplepopup-is-on');
+            clearTimeout(el._tpTimer);
+            if (!bad) el._tpTimer = setTimeout(function () { el.classList.remove('triplepopup-is-on'); }, 2200);
+        }
+        function saveSetting(cardSelector, statusSelector, field, value) {
+            var card = root.querySelector(cardSelector);
+            var url = card ? card.getAttribute('data-save-url') : '';
+            if (!url) return;
+            showStatus(statusSelector, '저장 중…');
+            var fd = new FormData();
+            fd.append(field, value);
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd,
+                credentials: 'same-origin'
+            }).then(function (res) { return res.json(); }).then(function (data) {
+                if (!data || Number(data.error) !== 0) throw new Error('save');
+                showStatus(statusSelector, '저장되었습니다');
+            }).catch(function () {
+                showStatus(statusSelector, '저장하지 못했습니다. 다시 선택해 주세요.', true);
+            });
+        }
+        root.addEventListener('change', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('triplepopup-ratio-input')) {
+                refreshRatio();
+                saveSetting('.triplepopup-ratio', '.triplepopup-ratio-status', 'popup_ratio', e.target.value);
+            }
+            if (e.target && e.target.classList && e.target.classList.contains('triplepopup-cols-input')) {
+                refreshRatio();
+                saveSetting('.triplepopup-cols', '.triplepopup-ratio-status', 'popup_cols', e.target.value);
+            }
+        });
+
+        var wInputEl = root.querySelector('input[name="popup_width"]');
+        if (wInputEl) wInputEl.addEventListener('input', refreshRatio);
+
+        /* ---------- 업로드 이미지 크기 확인 (고정 비율일 때만) ---------- */
+        function sameRatio(w1, h1, w2, h2) {
+            return Math.abs((w1 / h1) - (w2 / h2)) / (w2 / h2) < 0.01;
+        }
+
+        function baseImageSize() {
+            var first = root.querySelector('.triplepopup-tbody-group');
+            var img = first ? first.querySelector('.triplepopup-trow img.triplepopup-thumb') : null;
+            if (!img || !img.naturalWidth || !img.naturalHeight) return null;
+            return { w: img.naturalWidth, h: img.naturalHeight };
+        }
+
+        function showSizeWarning(opt) {
+            var old = root.querySelector('.triplepopup-modal');
+            if (old) old.parentNode.removeChild(old);
+
+            var modal = document.createElement('div');
+            modal.className = 'triplepopup-modal';
+            var box = document.createElement('div');
+            box.className = 'triplepopup-modal-box';
+            box.setAttribute('role', 'alertdialog');
+            box.setAttribute('aria-modal', 'true');
+
+            var title = document.createElement('div');
+            title.className = 'triplepopup-modal-title';
+            title.textContent = opt.title;
+            box.appendChild(title);
+
+            var list = document.createElement('div');
+            list.className = 'triplepopup-modal-list';
+            for (var i = 0; i < opt.rows.length; i++) {
+                var row = document.createElement('div');
+                row.className = 'triplepopup-modal-row' + (opt.rows[i].bad ? ' triplepopup-is-bad' : '');
+                var k = document.createElement('span'); k.textContent = opt.rows[i].label;
+                var v = document.createElement('b');    v.textContent = opt.rows[i].value;
+                row.appendChild(k); row.appendChild(v);
+                list.appendChild(row);
+            }
+            box.appendChild(list);
+
+            for (var d = 0; d < opt.lines.length; d++) {
+                var p = document.createElement('p');
+                p.className = 'triplepopup-modal-desc';
+                p.textContent = opt.lines[d];
+                box.appendChild(p);
+            }
+
+            var actions = document.createElement('div');
+            actions.className = 'triplepopup-modal-actions';
+            var keep = document.createElement('button');
+            keep.type = 'button';
+            keep.className = 'triplepopup-btn triplepopup-btn-ghost';
+            keep.textContent = '그대로 사용';
+            var retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'triplepopup-btn triplepopup-btn-primary';
+            retry.textContent = '다시 선택';
+            actions.appendChild(keep); actions.appendChild(retry);
+            box.appendChild(actions);
+            modal.appendChild(box);
+            root.appendChild(modal);
+
+            function close() { if (modal.parentNode) modal.parentNode.removeChild(modal); }
+            keep.addEventListener('click', close);
+            retry.addEventListener('click', function () { close(); if (opt.onRetry) opt.onRetry(); });
+            retry.focus();
+        }
+
+        function checkImageSize(input, w, h) {
+            var g = globalRatio();
+            if (!g) return;
+            var group = input.closest ? input.closest('.triplepopup-tbody-group') : null;
+            var first = root.querySelector('.triplepopup-tbody-group');
+            var picked = w + ' × ' + h + 'px';
+
+            function retry() {
+                input.value = '';
+                try { input.dispatchEvent(new Event('change', { bubbles: true })); } catch (err) {}
+                input.click();
+            }
+
+            if (group === first) {
+                if (sameRatio(w, h, g.w, g.h)) return;
+                showSizeWarning({
+                    title: '선택한 팝업 비율과 이미지 비율이 다릅니다',
+                    rows: [
+                        { label: '팝업 비율', value: g.label + ' (권장 ' + g.rec + 'px)' },
+                        { label: '선택한 이미지', value: picked, bad: true }
+                    ],
+                    lines: ['1번 배너는 다른 배너의 기준이 됩니다.', '그대로 올리면 가운데를 기준으로 잘려 표시됩니다.'],
+                    onRetry: retry
+                });
+                return;
+            }
+
+            var base = baseImageSize();
+            if (!base) return;
+            if (base.w === w && base.h === h) return;
+            var same = sameRatio(w, h, base.w, base.h);
+            showSizeWarning({
+                title: '1번 배너와 이미지 크기가 다릅니다',
+                rows: [
+                    { label: '1번 배너 (기준)', value: base.w + ' × ' + base.h + 'px' },
+                    { label: '선택한 이미지', value: picked, bad: true }
+                ],
+                lines: same
+                    ? ['비율은 같아서 잘리지 않습니다.', '크기만 달라 화질 차이가 날 수 있습니다.']
+                    : ['비율이 달라 그대로 올리면 가운데를 기준으로 잘려 표시됩니다.', '1번 배너와 같은 크기로 다시 만들어 올리는 것을 권장합니다.'],
+                onRetry: retry
+            });
+        }
+
+        root.addEventListener('change', function (e) {
+            var input = e.target;
+            if (!input || input.type !== 'file' || !input.closest || !input.closest('.triplepopup-edit')) return;
+            var file = input.files && input.files[0];
+            if (!file || !/^image\//.test(file.type) || !window.URL || !URL.createObjectURL) return;
+            var url = URL.createObjectURL(file);
+            var probe = new Image();
+            probe.onload = function () {
+                var w = probe.naturalWidth, h = probe.naturalHeight;
+                URL.revokeObjectURL(url);
+                if (w && h) checkImageSize(input, w, h);
+            };
+            probe.onerror = function () { URL.revokeObjectURL(url); };
+            probe.src = url;
+        });
+
+        /* ---------- 팝업 등장 효과 (20가지) · 실제 팝업 미리보기 ---------- */
+        // 실제 팝업 미리보기에 넘길 설정: 저장 전의 입력값(가로 폭·슬라이드·닫는 날짜·자동 종료)까지 반영한다
+        function previewOpts() {
+            var g = globalRatio();
+            var cfg = { popup_effect: fxCurrent(), popup_cols: colsCurrent(), popup_ratio: g ? g.label : 'auto' };
+            var w = root.querySelector('input[name="popup_width"]');
+            cfg.popup_width = w ? Math.max(0, parseInt(w.value, 10) || 0) : 0;
+            ['slide_interval', 'close_days', 'auto_close'].forEach(function (name) {
+                var el = root.querySelector('input[name="' + name + '"]');
+                if (el && el.value !== '' && !isNaN(parseInt(el.value, 10))) cfg[name] = parseInt(el.value, 10);
+            });
+            return { preview: true, cfg: cfg };
+        }
+
+        var fxPlayTimer = null;
+        function fxCurrent() {
+            var on = root.querySelector('.triplepopup-fx-input:checked');
+            var n = on ? parseInt(on.value, 10) : 1;
+            return (n >= 1 && n <= 20) ? n : 1;
+        }
+        function fxPlay() {
+            var view = root.querySelector('.triplepopup-fx-view');
+            if (!view) return;
+            var n = fxCurrent();
+            clearTimeout(fxPlayTimer);
+            view.className = 'triplepopup-fx-view';
+            void view.offsetWidth;
+            view.className = 'triplepopup-fx-view triplepopup-pop-entering triplepopup-pop-fx' + n;
+            fxPlayTimer = setTimeout(function () { view.className = 'triplepopup-fx-view'; }, 1400);
+        }
+        function fxRefresh() {
+            var n = fxCurrent();
+            var items = root.querySelectorAll('.triplepopup-fx-item');
+            var name = '';
+            for (var i = 0; i < items.length; i++) {
+                var inp = items[i].querySelector('.triplepopup-fx-input');
+                var on = !!(inp && inp.checked);
+                items[i].classList.toggle('triplepopup-is-checked', on);
+                if (on) { var nm = items[i].querySelector('.triplepopup-fx-name'); name = nm ? nm.textContent : ''; }
+            }
+            var cur = root.querySelector('.triplepopup-fx-cur');
+            if (cur) cur.textContent = n + '. ' + name;
+        }
+        root.addEventListener('change', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('triplepopup-fx-input')) {
+                fxRefresh();
+                fxPlay();
+                saveSetting('.triplepopup-fx', '.triplepopup-fx-status', 'popup_effect', e.target.value);
+            }
+        });
+        root.addEventListener('click', function (e) {
+            if (!e.target.closest) return;
+            if (e.target.closest('.triplepopup-fx-replay')) fxPlay();
+            if (e.target.closest('.triplepopup-fx-open') && typeof window.triplepopupOpen === 'function') {
+                window.triplepopupOpen(previewOpts());
+            }
+        });
+        fxRefresh();
+
+        /* ---------- 오른쪽 따라다니는 저장 막대 (저장 · 미리보기 · 맨 위로) ---------- */
+        /* ---------- 폴딩: 팝업 비율·배치 설정 / 팝업 등장 효과 (기본 닫힘) ---------- */
+        var foldCards = root.querySelectorAll('.triplepopup-fold');
+        for (var fc = 0; fc < foldCards.length; fc++) {
+            (function (card) {
+                var head = card.querySelector('.triplepopup-card-head');
+                if (!head) return;
+                head.setAttribute('role', 'button');
+                head.setAttribute('tabindex', '0');
+                head.setAttribute('aria-expanded', card.classList.contains('triplepopup-is-closed') ? 'false' : 'true');
+                function toggle() {
+                    var closed = card.classList.toggle('triplepopup-is-closed');
+                    head.setAttribute('aria-expanded', closed ? 'false' : 'true');
+                }
+                head.addEventListener('click', toggle);
+                head.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                });
+            })(foldCards[fc]);
+        }
+
+        var floatBar = root.querySelector('.triplepopup-float');
+        if (floatBar) {
+            var setForms = root.querySelectorAll('.triplepopup-settings-form');
+            var floatTimer = null;
+            var floatBase = [];
+
+            var floatFields = function () {
+                var out = [];
+                for (var i = 0; i < setForms.length; i++) {
+                    var els = setForms[i].querySelectorAll('input, select, textarea');
+                    for (var j = 0; j < els.length; j++) {
+                        var el = els[j];
+                        if (el.type === 'hidden' || el.type === 'submit' || el.type === 'button') continue;
+                        out.push((el.type === 'checkbox' || el.type === 'radio') ? (el.checked ? '1' : '0') : el.value);
+                    }
+                }
+                return out;
+            };
+            var floatSet = function (state, label, count) {
+                floatBar.setAttribute('data-state', state);
+                var lb = floatBar.querySelector('.triplepopup-float-label');
+                var ct = floatBar.querySelector('.triplepopup-float-count');
+                if (lb) lb.textContent = label;
+                if (ct) { ct.textContent = count || ''; ct.hidden = !count; }
+            };
+            var floatCount = function () {
+                var now = floatFields(), n = 0;
+                for (var i = 0; i < now.length; i++) if (now[i] !== floatBase[i]) n++;
+                return n;
+            };
+            // 지금 펼쳐져 있고 값이 바뀐 배너 편집 폼 (없으면 null)
+            var bannerForm = function () {
+                var open = root.querySelectorAll('.triplepopup-edit:not([hidden]) form');
+                for (var i = 0; i < open.length; i++) if (open[i]._tpDirty) return open[i];
+                return null;
+            };
+            var floatRefresh = function () {
+                if (floatBar.getAttribute('data-state') === 'saving') return;
+                clearTimeout(floatTimer);
+                var n = floatCount() + (bannerForm() ? 1 : 0);
+                floatSet(n ? 'dirty' : 'idle', '저장', n);
+            };
+            var floatSave = function () {
+                var url = floatBar.getAttribute('data-save-url');
+                if (!url || floatBar.getAttribute('data-state') === 'saving') return;
+                var bf = bannerForm();
+                // 배너 저장은 기존 '등록/수정' 버튼과 같은 방식(페이지 이동)으로 처리한다
+                var submitBanner = function () {
+                    var btn = bf.querySelector('.triplepopup-edit-actions button[type="submit"]');
+                    floatSet('saving', '저장 중', 0);
+                    if (btn) btn.click(); else if (bf.requestSubmit) bf.requestSubmit(); else bf.submit();
+                };
+                if (!floatCount()) {
+                    if (bf) submitBanner(); else floatRefresh();
+                    return;
+                }
+                var sent = floatFields();
+                var fd = new FormData();
+                for (var i = 0; i < setForms.length; i++) {
+                    var part = new FormData(setForms[i]);
+                    part.forEach(function (value, key) { fd.append(key, value); });
+                }
+                floatSet('saving', '저장 중', 0);
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: fd,
+                    credentials: 'same-origin'
+                }).then(function (res) { return res.json(); }).then(function (data) {
+                    if (!data || Number(data.error) !== 0) throw new Error('save');
+                    floatBase = sent;
+                    if (bf) { submitBanner(); return; } // 설정을 먼저 저장한 뒤 배너를 저장
+                    floatSet('saved', '저장됨', 0);
+                    floatTimer = setTimeout(function () { floatBar.setAttribute('data-state', 'idle'); floatRefresh(); }, 1800);
+                }).catch(function () {
+                    floatSet('error', '저장 실패', floatCount());
+                    floatTimer = setTimeout(function () { floatBar.setAttribute('data-state', 'idle'); floatRefresh(); }, 2600);
+                });
+            };
+
+            for (var sf = 0; sf < setForms.length; sf++) {
+                setForms[sf].addEventListener('input', floatRefresh);
+                setForms[sf].addEventListener('change', floatRefresh);
+                setForms[sf].addEventListener('click', function () { setTimeout(floatRefresh, 0); });
+                setForms[sf].addEventListener('submit', function (e) { e.preventDefault(); floatSave(); });
+            }
+            // 배너 편집 폼: 값이 바뀌면 저장 막대를 활성화하고, 펼침/닫힘에 맞춰 상태 갱신
+            root.addEventListener('input', function (e) { markBanner(e); });
+            root.addEventListener('change', function (e) { markBanner(e); });
+            function markBanner(e) {
+                var f = e.target && e.target.closest ? e.target.closest('.triplepopup-edit form') : null;
+                if (!f) return;
+                f._tpDirty = true;
+                floatRefresh();
+            }
+            root.addEventListener('click', function (e) {
+                if (e.target.closest && e.target.closest('.triplepopup-edit-toggle, .triplepopup-edit-cancel')) setTimeout(floatRefresh, 0);
+            });
+            // 배너 저장(등록/수정 버튼 포함)으로 페이지가 이동할 때는 이탈 경고를 띄우지 않는다
+            root.addEventListener('submit', function (e) {
+                if (e.target.closest && e.target.closest('.triplepopup-edit')) floatBar.setAttribute('data-state', 'saving');
+            }, true);
+            floatBar.addEventListener('click', function (e) {
+                var btn = e.target.closest ? e.target.closest('.triplepopup-float-btn') : null;
+                if (!btn) return;
+                if (btn.classList.contains('triplepopup-float-save')) floatSave();
+                else if (btn.classList.contains('triplepopup-float-top')) window.scrollTo({ top: 0, behavior: 'smooth' });
+                else if (btn.classList.contains('triplepopup-float-preview') && typeof window.triplepopupOpen === 'function') {
+                    window.triplepopupOpen(previewOpts());
+                }
+            });
+            window.addEventListener('beforeunload', function (e) {
+                if (floatBar.getAttribute('data-state') !== 'dirty') return;
+                e.preventDefault();
+                e.returnValue = '';
+            });
+            setTimeout(function () { floatBase = floatFields(); floatRefresh(); }, 0);
+        }
+        /* ---------- 배너 종류(이미지/유튜브) ---------- */
+        function youtubeId(url) {
+            var m = String(url || '').trim().match(/^https?:\/\/(?:[a-z0-9-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/|v\/))([A-Za-z0-9_-]{11})/i);
+            return m ? m[1] : '';
+        }
+
+        function ytPlayerSrc(form, id) {
+            function on(name) { var el = form.querySelector('input[name="' + name + '"]'); return !!(el && el.checked); }
+            var startEl = form.querySelector('input[name="yt_start"]');
+            var start = startEl ? Math.max(0, parseInt(startEl.value, 10) || 0) : 0;
+            var q = ['playsinline=1', 'rel=0', 'mute=1', 'autoplay=' + (on('yt_autoplay') ? 1 : 0), 'controls=' + (on('yt_controls') ? 1 : 0)];
+            if (on('yt_loop')) { q.push('loop=1'); q.push('playlist=' + id); }
+            if (start > 0) q.push('start=' + start);
+            return 'https://www.youtube.com/embed/' + id + '?' + q.join('&');
+        }
+
+        function syncYtPreview(form, yt, id, shorts) {
+            var box   = yt.querySelector('.triplepopup-pv-ytbox');
+            var frame = yt.querySelector('.triplepopup-pv-ytframe');
+            if (!box || !frame) return;
+
+            var visible = !yt.hidden && form.offsetParent !== null;
+            var w = yt.clientWidth, h = yt.clientHeight;
+            if (visible && w && h) {
+                var vr = shorts ? (9 / 16) : (16 / 9);
+                var cover = form.querySelector('input[name="yt_cover"]');
+                var wide = (w / h) > vr;
+                var fill = !!(cover && cover.checked);
+                var bw = (wide === fill) ? w : h * vr;
+                box.style.aspectRatio = 'auto';
+                box.style.width  = Math.ceil(bw) + 'px';
+                box.style.height = Math.ceil(bw / vr) + 'px';
+            }
+
+            var src = (visible && id) ? ytPlayerSrc(form, id) : '';
+            if (frame.getAttribute('data-src') === src) return;
+            frame.setAttribute('data-src', src);
+            clearTimeout(frame._tpTimer);
+            if (!src) { frame.innerHTML = ''; return; }
+            frame._tpTimer = setTimeout(function () {
+                if (frame.getAttribute('data-src') !== src) return;
+                frame.innerHTML = '';
+                var el = document.createElement('iframe');
+                el.title = '유튜브 미리보기';
+                el.setAttribute('frameborder', '0');
+                el.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+                el.src = src;
+                frame.appendChild(el);
+            }, 400);
+        }
+
+        function syncAllMedia() {
+            var forms = root.querySelectorAll('.triplepopup-edit form');
+            for (var i = 0; i < forms.length; i++) updateMedia(forms[i]);
+        }
+
+        function updateMedia(form) {
+            var on = form.querySelector('input[name="media_type"]:checked');
+            var type = on ? on.value : 'image';
+            var blocks = form.querySelectorAll('[data-media]');
+            for (var i = 0; i < blocks.length; i++) blocks[i].hidden = blocks[i].getAttribute('data-media') !== type;
+
+            var auto = form.querySelector('input[name="yt_autoplay"]');
+            var mute = form.querySelector('input[name="yt_mute"]');
+            if (auto && mute) {
+                if (auto.checked) mute.checked = true;
+                var box = mute.closest ? mute.closest('.triplepopup-opt') : null;
+                if (box) box.classList.toggle('triplepopup-is-locked', auto.checked);
+            }
+
+            var url = form.querySelector('input[name="youtube_url"]');
+            var id = url ? youtubeId(url.value) : '';
+            var status = form.querySelector('.triplepopup-yt-status');
+            if (status) {
+                var has = url && url.value.trim() !== '';
+                status.textContent = !has ? '' : (id ? '영상 주소를 확인했습니다.' : '유튜브 주소 형식이 아닙니다.');
+                status.classList.toggle('triplepopup-is-ok', !!id);
+                status.classList.toggle('triplepopup-is-bad', has && !id);
+            }
+
+            var card = form.querySelector('.triplepopup-preview-card');
+            if (!card) return;
+            var yt = card.querySelector('.triplepopup-pv-yt');
+            var img = card.querySelector('.triplepopup-pv-img');
+            var noimg = card.querySelector('.triplepopup-pv-noimg');
+            var over = card.querySelector('.triplepopup-pv-overlay');
+            if (yt) {
+                yt.hidden = type !== 'youtube';
+                syncYtPreview(form, yt, type === 'youtube' ? id : '', !!(url && /\/shorts\//i.test(url.value)));
+            }
+            if (type === 'youtube') {
+                if (img) img.hidden = true;
+                if (noimg) noimg.hidden = true;
+                if (over) over.hidden = true;
+            } else {
+                var hasImg = !!(img && img.getAttribute('src'));
+                if (img) img.hidden = !hasImg;
+                if (noimg) noimg.hidden = hasImg;
+            }
+        }
+
+        refreshRatio();
 
         /* ---------- 텍스트 본문 에디터 (라이믹스 에디터 모듈 — 에디터 컴포넌트 지원) ---------- */
         // 에디터 내용이 바뀌면 숨겨진 html_content 값을 갱신하고 미리보기에 알린다
@@ -503,6 +1064,7 @@
             if (src) { img.src = src; img.hidden = false; if (noimg) noimg.hidden = true; }
             else { img.hidden = true; if (noimg) noimg.hidden = false; }
             updatePreview(form);
+            updateMedia(form);
         }
 
         var langWraps = root.querySelectorAll('.triplepopup-langimg');
@@ -657,6 +1219,44 @@
         });
 
         /* ---------- 드래그 순서 변경 ---------- */
+        /* ---------- 모듈 번호 클릭 시 복사 (카드 선택은 바뀌지 않음) ---------- */
+        root.addEventListener('click', function (e) {
+            var btn = e.target.closest ? e.target.closest('.triplepopup-module-srl') : null;
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            var srl = btn.getAttribute('data-srl') || '';
+            var label = btn.getAttribute('data-label') || btn.textContent;
+            btn.setAttribute('data-label', label);
+
+            function done(ok) {
+                btn.textContent = ok ? '복사됨 ' + srl : '복사하지 못했습니다';
+                btn.classList.toggle('triplepopup-is-copied', ok);
+                clearTimeout(btn._tpTimer);
+                btn._tpTimer = setTimeout(function () {
+                    btn.textContent = label;
+                    btn.classList.remove('triplepopup-is-copied');
+                }, 1400);
+            }
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = srl;
+                ta.setAttribute('readonly', 'readonly');
+                ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+                document.body.appendChild(ta);
+                ta.select();
+                var ok = false;
+                try { ok = document.execCommand('copy'); } catch (err) {}
+                document.body.removeChild(ta);
+                done(ok);
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(srl).then(function () { done(true); }, fallback);
+            } else {
+                fallback();
+            }
+        });
+
         var table = root.querySelector('.triplepopup-table');
         if (!table) return;
         var orderUrl = table.getAttribute('data-order-url') || '';

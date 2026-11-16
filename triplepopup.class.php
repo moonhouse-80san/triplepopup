@@ -1,4 +1,5 @@
 <?php
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 /**
  * 팝업 관리 모듈
  * - moduleHandler.init(after) 트리거로 프론트 페이지에 레이어 팝업을 주입
@@ -10,189 +11,66 @@ class triplepopup extends ModuleObject
     const TRIGGER_METHOD = 'triggerInjectPopup';
     const TRIGGER_WHEN   = 'after';
 
+    const TABLE        = 'triplepopup_slots';
+    const EFFECT_COUNT = 20;
+
+    /** 스키마 XML 이후에 추가된 컬럼 (이름 => [타입, 크기, 기본값]) — 업데이트 시 없는 컬럼만 자동 추가 */
+    private static $extra_columns = array(
+        'start_date'          => array('varchar', 8, null),
+        'end_date'            => array('varchar', 8, null),
+        'title_text'          => array('varchar', 200, null),
+        'sub_text'            => array('varchar', 300, null),
+        'badge_text_color'    => array('varchar', 20, '#ffffff'),
+        'footer_text_color'   => array('varchar', 20, '#ffffff'),
+        'click_target'        => array('varchar', 10, 'blank'),
+        'body_images'         => array('text', '', null),
+        'html_content'        => array('text', '', null),
+        'html_contents'       => array('text', '', null),
+        'html_position'       => array('varchar', 10, 'top'),
+        'html_bg_color'       => array('varchar', 20, '#ffffff'),
+        'source_document_srl' => array('bigint', 11, null),
+        'html_bg_trans'       => array('tinyint', 3, 0),
+        'body_preset'         => array('tinyint', 1, 0),
+        'target_groups'       => array('text', '', null),
+        'border_width'        => array('tinyint', 3, 0),
+        'auto_close_sec'      => array('varchar', 6, ''),
+        'border_color'        => array('varchar', 20, '#ffaa56'),
+        'card_shadow'         => array('char', 1, 'N'),
+        'overlay_dim'         => array('tinyint', 3, 42),
+        'target_modules'      => array('text', '', null),
+        'footer_login'        => array('char', 1, 'N'),
+        'footer_sns'          => array('char', 1, 'N'),
+        'hide_on_document'    => array('char', 1, 'N'),
+        'media_type'          => array('varchar', 10, 'image'),
+        'youtube_url'         => array('varchar', 300, null),
+        'youtube_options'     => array('text', '', null),
+    );
+
     function moduleInstall()
     {
-        $oDB = DB::getInstance();
-        $oDB->createTableByXmlFile(_XE_PATH_ . 'modules/triplepopup/schemas/triplepopup_slots.xml');
+        $this->ensureSchema();
         $this->_registerTrigger();
         return new BaseObject();
     }
 
     /**
-     * 테이블이나 트리거가 없으면 true 를 반환하여 라이믹스가 자동으로 업데이트를 수행하게 함.
+     * 테이블, 컬럼, 트리거 중 하나라도 없으면 true 를 반환하여 라이믹스가 자동으로 업데이트를 수행하게 함.
      * (기존 '강제 설치' 버튼을 대체하는 자가 복구 로직)
      */
     function checkUpdate()
     {
         $oDB = DB::getInstance();
-        if (!$oDB->isTableExists('triplepopup_slots')) {
-            return true;
+        if (!$oDB->isTableExists(self::TABLE)) return true;
+        foreach (self::$extra_columns as $name => $def) {
+            if (!$oDB->isColumnExists(self::TABLE, $name)) return true;
         }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'start_date')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'end_date')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'title_text')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'sub_text')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'badge_text_color')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_text_color')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'click_target')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'body_images')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_content')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_contents')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_position')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_color')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'source_document_srl')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'auto_close_sec')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'card_shadow')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'overlay_dim')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_login')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
-            return true;
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'hide_on_document')) {
-            return true;
-        }
-        if (!$this->_isTriggerRegistered()) {
-            return true;
-        }
-        return false;
+        return !$this->_isTriggerRegistered();
     }
 
     function moduleUpdate()
     {
-        $oDB = DB::getInstance();
-        if (!$oDB->isTableExists('triplepopup_slots')) {
-            $oDB->createTableByXmlFile(_XE_PATH_ . 'modules/triplepopup/schemas/triplepopup_slots.xml');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'start_date')) {
-            $oDB->addColumn('triplepopup_slots', 'start_date', 'varchar', 8);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'end_date')) {
-            $oDB->addColumn('triplepopup_slots', 'end_date', 'varchar', 8);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'title_text')) {
-            $oDB->addColumn('triplepopup_slots', 'title_text', 'varchar', 200);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'sub_text')) {
-            $oDB->addColumn('triplepopup_slots', 'sub_text', 'varchar', 300);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'badge_text_color')) {
-            $oDB->addColumn('triplepopup_slots', 'badge_text_color', 'varchar', 20, '#ffffff');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_text_color')) {
-            $oDB->addColumn('triplepopup_slots', 'footer_text_color', 'varchar', 20, '#ffffff');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'click_target')) {
-            $oDB->addColumn('triplepopup_slots', 'click_target', 'varchar', 10, 'blank');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'body_images')) {
-            $oDB->addColumn('triplepopup_slots', 'body_images', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_content')) {
-            $oDB->addColumn('triplepopup_slots', 'html_content', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_contents')) {
-            $oDB->addColumn('triplepopup_slots', 'html_contents', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_position')) {
-            $oDB->addColumn('triplepopup_slots', 'html_position', 'varchar', 10, 'top');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_color')) {
-            $oDB->addColumn('triplepopup_slots', 'html_bg_color', 'varchar', 20, '#ffffff');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'source_document_srl')) {
-            $oDB->addColumn('triplepopup_slots', 'source_document_srl', 'bigint', 11);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
-            $oDB->addColumn('triplepopup_slots', 'html_bg_trans', 'tinyint', 3, 0);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
-            $oDB->addColumn('triplepopup_slots', 'body_preset', 'tinyint', 1, 0);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
-            $oDB->addColumn('triplepopup_slots', 'target_groups', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
-            $oDB->addColumn('triplepopup_slots', 'border_width', 'tinyint', 3, 0);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'auto_close_sec')) {
-            $oDB->addColumn('triplepopup_slots', 'auto_close_sec', 'varchar', 6, '');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
-            $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'card_shadow')) {
-            $oDB->addColumn('triplepopup_slots', 'card_shadow', 'char', 1, 'N');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'overlay_dim')) {
-            $oDB->addColumn('triplepopup_slots', 'overlay_dim', 'tinyint', 3, 42);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
-            $oDB->addColumn('triplepopup_slots', 'target_modules', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_login')) {
-            $oDB->addColumn('triplepopup_slots', 'footer_login', 'char', 1, 'N');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
-            $oDB->addColumn('triplepopup_slots', 'footer_sns', 'char', 1, 'N');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'hide_on_document')) {
-            $oDB->addColumn('triplepopup_slots', 'hide_on_document', 'char', 1, 'N');
-        }
-        if (!$this->_isTriggerRegistered()) {
-            $this->_registerTrigger();
-        }
+        $this->ensureSchema();
+        if (!$this->_isTriggerRegistered()) $this->_registerTrigger();
         return new BaseObject();
     }
 
@@ -204,90 +82,20 @@ class triplepopup extends ModuleObject
     }
 
     /**
-     * 테이블/날짜 컬럼이 없으면 즉시 생성·추가하는 안전장치.
+     * 테이블/컬럼이 없으면 즉시 생성·추가하는 안전장치.
      * 관리자 페이지 진입 시 호출하여, 모듈 업데이트를 별도로 실행하지 않아도 스키마가 보강되도록 한다.
      */
     function ensureSchema()
     {
         $oDB = DB::getInstance();
-        if (!$oDB->isTableExists('triplepopup_slots')) {
+        if (!$oDB->isTableExists(self::TABLE)) {
             $oDB->createTableByXmlFile(_XE_PATH_ . 'modules/triplepopup/schemas/triplepopup_slots.xml');
             return;
         }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'start_date')) {
-            $oDB->addColumn('triplepopup_slots', 'start_date', 'varchar', 8);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'end_date')) {
-            $oDB->addColumn('triplepopup_slots', 'end_date', 'varchar', 8);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'title_text')) {
-            $oDB->addColumn('triplepopup_slots', 'title_text', 'varchar', 200);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'sub_text')) {
-            $oDB->addColumn('triplepopup_slots', 'sub_text', 'varchar', 300);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'badge_text_color')) {
-            $oDB->addColumn('triplepopup_slots', 'badge_text_color', 'varchar', 20, '#ffffff');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_text_color')) {
-            $oDB->addColumn('triplepopup_slots', 'footer_text_color', 'varchar', 20, '#ffffff');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'click_target')) {
-            $oDB->addColumn('triplepopup_slots', 'click_target', 'varchar', 10, 'blank');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'body_images')) {
-            $oDB->addColumn('triplepopup_slots', 'body_images', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_content')) {
-            $oDB->addColumn('triplepopup_slots', 'html_content', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_contents')) {
-            $oDB->addColumn('triplepopup_slots', 'html_contents', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_position')) {
-            $oDB->addColumn('triplepopup_slots', 'html_position', 'varchar', 10, 'top');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_color')) {
-            $oDB->addColumn('triplepopup_slots', 'html_bg_color', 'varchar', 20, '#ffffff');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'source_document_srl')) {
-            $oDB->addColumn('triplepopup_slots', 'source_document_srl', 'bigint', 11);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'html_bg_trans')) {
-            $oDB->addColumn('triplepopup_slots', 'html_bg_trans', 'tinyint', 3, 0);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'body_preset')) {
-            $oDB->addColumn('triplepopup_slots', 'body_preset', 'tinyint', 1, 0);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'target_groups')) {
-            $oDB->addColumn('triplepopup_slots', 'target_groups', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'border_width')) {
-            $oDB->addColumn('triplepopup_slots', 'border_width', 'tinyint', 3, 0);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'auto_close_sec')) {
-            $oDB->addColumn('triplepopup_slots', 'auto_close_sec', 'varchar', 6, '');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'border_color')) {
-            $oDB->addColumn('triplepopup_slots', 'border_color', 'varchar', 20, '#ffaa56');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'card_shadow')) {
-            $oDB->addColumn('triplepopup_slots', 'card_shadow', 'char', 1, 'N');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'overlay_dim')) {
-            $oDB->addColumn('triplepopup_slots', 'overlay_dim', 'tinyint', 3, 42);
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'target_modules')) {
-            $oDB->addColumn('triplepopup_slots', 'target_modules', 'text');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_login')) {
-            $oDB->addColumn('triplepopup_slots', 'footer_login', 'char', 1, 'N');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'footer_sns')) {
-            $oDB->addColumn('triplepopup_slots', 'footer_sns', 'char', 1, 'N');
-        }
-        if (!$oDB->isColumnExists('triplepopup_slots', 'hide_on_document')) {
-            $oDB->addColumn('triplepopup_slots', 'hide_on_document', 'char', 1, 'N');
+        foreach (self::$extra_columns as $name => $def) {
+            if (!$oDB->isColumnExists(self::TABLE, $name)) {
+                $oDB->addColumn(self::TABLE, $name, $def[0], $def[1], $def[2]);
+            }
         }
     }
 
@@ -344,13 +152,13 @@ class triplepopup extends ModuleObject
         return is_array($langs) ? $langs : array();
     }
 
-    /** 언어별 이미지 맵(JSON) → 배열. 사용 중인 언어 코드만 남긴다. */
-    // 기본 배경이미지(1~6) 주소
+    /** 기본 배경이미지(1~6) 주소 */
     function getPresetImageUrl($no)
     {
         return \RX_BASEURL . 'modules/triplepopup/tpl/img/bg/background_' . (int)$no . '.jpg';
     }
 
+    /** 언어별 이미지 맵(JSON) → 배열. 사용 중인 언어 코드만 남긴다. */
     function decodeLangImages($json)
     {
         $map = json_decode((string)$json, true);
@@ -364,6 +172,53 @@ class triplepopup extends ModuleObject
             $result[$code] = $url;
         }
         return $result;
+    }
+
+    /** 선택 가능한 팝업 비율 (auto = 이미지 원본 비율 그대로) */
+    function getRatioList()
+    {
+        return array('1:1', '3:4', '4:5', '2:3', '7:8', '4:3', '3:2', '2:1', '16:9', '9:16', 'auto');
+    }
+
+    /** 유튜브 주소(일반·쇼츠·공유·임베드)에서 영상 ID 와 쇼츠 여부를 추출. 형식이 맞지 않으면 null */
+    function parseYoutubeUrl($url)
+    {
+        $url = trim((string)$url);
+        if ($url === '') return null;
+        if (!preg_match('~^https?://(?:[a-z0-9-]+\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com/(?:watch\?(?:.*&)?v=|shorts/|embed/|live/|v/))([A-Za-z0-9_-]{11})~i', $url, $m)) {
+            return null;
+        }
+        $info = new stdClass();
+        $info->id     = $m[1];
+        $info->shorts = (stripos($url, '/shorts/') !== false);
+        return $info;
+    }
+
+    /** 유튜브 재생 옵션 기본값 (Y/N) */
+    function getYoutubeOptionDefaults()
+    {
+        return array(
+            'autoplay'    => 'Y',
+            'mute'        => 'Y',
+            'loop'        => 'N',
+            'controls'    => 'Y',
+            'cover'       => 'N',
+            'pause_slide' => 'Y',
+        );
+    }
+
+    /** 저장된 유튜브 재생 옵션(JSON) → 객체 (자동 재생이면 음소거 강제) */
+    function decodeYoutubeOptions($json)
+    {
+        $data = json_decode((string)$json, true);
+        if (!is_array($data)) $data = array();
+        $out = new stdClass();
+        foreach ($this->getYoutubeOptionDefaults() as $key => $default) {
+            $out->{$key} = isset($data[$key]) ? ($data[$key] === 'Y' ? 'Y' : 'N') : $default;
+        }
+        $out->start = isset($data['start']) ? max(0, min(86400, (int)$data['start'])) : 0;
+        if ($out->autoplay === 'Y') $out->mute = 'Y';
+        return $out;
     }
 
     /** 다국어 적용 대상 텍스트 필드 */

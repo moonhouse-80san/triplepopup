@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com -->
 <table name="triplepopup_slots">
     <column name="slot_number"     type="tinyint"  notnull="notnull" primarykey="primarykey" />
     <column name="badge_text"      type="varchar"  size="100" />
@@ -6,6 +7,9 @@
     <column name="badge_text_color" type="varchar"  size="20"  default="#ffffff" />
     <column name="body_image"      type="varchar"  size="500" />
     <column name="body_images"     type="text" />
+    <column name="media_type"      type="varchar"  size="10"  default="image" />
+    <column name="youtube_url"     type="varchar"  size="300" />
+    <column name="youtube_options" type="text" />
     <column name="title_text"      type="varchar"  size="200" />
     <column name="sub_text"        type="varchar"  size="300" />
     <column name="html_content"    type="text" />

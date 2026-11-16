@@ -1,3 +1,4 @@
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 /* ============================================================
    triplepopup 프론트 팝업 CSS  ·  PLAYWEBON
    v3 : 클래스 네임스페이스 분리 (.triplepopup-pop-*)
@@ -50,10 +51,6 @@
 #triplepopup-pop-root img:not(:where(.triplepopup-pop-html-raw *)) { display: block; max-width: none; }
 
 @keyframes triplepopup-pop-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes triplepopup-pop-rise {
-    from { opacity: 0; transform: translateY(14px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-}
 
 #triplepopup-pop-root .triplepopup-pop-wrap {
     pointer-events: auto; /* 전체 배경이 클릭 통과(어둡기 0)여도 팝업 본체는 항상 반응 */
@@ -62,7 +59,6 @@
     flex-direction: column;
     align-items: center;
     margin: auto;
-    animation: triplepopup-pop-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* 카드 무대 — 좌우 버튼은 이 위에 absolute 로 겹쳐 올림 */
@@ -154,6 +150,41 @@
 #triplepopup-pop-root .triplepopup-pop-card:hover .triplepopup-pop-media.triplepopup-pop-clickable img {
     transform: scale(1.045);
 }
+/* 팝업 비율을 고정한 경우: 이미지가 칸을 가득 채우고 넘치는 부분은 가운데 기준으로 잘림 */
+#triplepopup-pop-root.triplepopup-pop-ratio-fixed .triplepopup-pop-media img {
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+}
+
+/* 유튜브 영상 배너 */
+#triplepopup-pop-root .triplepopup-pop-media.triplepopup-pop-video { background: #000; }
+#triplepopup-pop-root .triplepopup-pop-video .triplepopup-pop-poster {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.86;
+}
+#triplepopup-pop-root .triplepopup-pop-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+}
+#triplepopup-pop-root .triplepopup-pop-frame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+#triplepopup-pop-root .triplepopup-pop-video .triplepopup-pop-badge { pointer-events: none; }
 
 /* 개별 배너 닫기(X) 버튼 — 카드 우측 상단 모서리에 걸침 (파란 원 + 흰 테두리 + 흰 X) */
 #triplepopup-pop-root .triplepopup-pop-card-close {
@@ -443,6 +474,14 @@
 #triplepopup-pop-root .triplepopup-pop-login-input,
 #triplepopup-pop-root .triplepopup-pop-sns .zzan-sns-login,
 #triplepopup-pop-root .triplepopup-pop-sns .zzan-sns-login * { max-width: 100%; box-sizing: border-box; }
+/* SNS 로그인 버튼(카카오·구글)을 가운데 정렬 */
+#triplepopup-pop-root .triplepopup-pop-sns .zzan-sns-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+#triplepopup-pop-root .triplepopup-pop-sns .zzan-sns-login > * { margin-left: auto; margin-right: auto; }
 #triplepopup-pop-root .triplepopup-pop-login-fields { display: flex; flex-direction: column; gap: 8px; }
 #triplepopup-pop-root .triplepopup-pop-login-input {
     display: block;
@@ -556,6 +595,96 @@
     user-select: none !important;
 }
 
+/* 드래그 중 영상(iframe) 위를 지나도 끌기가 끊기지 않게 */
+#triplepopup-pop-root.triplepopup-pop-dragging iframe { pointer-events: none !important; }
+
+/* 팝업 등장 효과 (20가지) — 효과는 JS 가 .triplepopup-pop-entering / .triplepopup-pop-fxN 클래스로 지정 */
+#triplepopup-pop-root.triplepopup-pop-entering .triplepopup-pop-viewport { overflow: visible; }
+#triplepopup-pop-root.triplepopup-pop-entering .triplepopup-pop-track > :not(.triplepopup-pop-in) { visibility: hidden; }
+/* 효과가 도는 동안에는 큰 이동 효과 때문에 스크롤바가 깜빡이지 않도록 스크롤을 잠근다 */
+#triplepopup-pop-root.triplepopup-pop-entering { overflow: hidden; }
+.triplepopup-pop-entering.triplepopup-pop-fx14,
+.triplepopup-pop-entering.triplepopup-pop-fx20 { perspective: 1400px; }
+
+@keyframes tpop-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx1 .triplepopup-pop-wrap { animation: tpop-fx1 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx1 { from { opacity: 0; transform: translateY(calc(14px * var(--tpop-s, 1))) scale(0.97); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx2 .triplepopup-pop-wrap { animation: tpop-fx2 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx2 { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx3 .triplepopup-pop-in { animation: tpop-fx3 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--tpop-i, 0) * 90ms); }
+.triplepopup-pop-entering.triplepopup-pop-fx3 .triplepopup-pop-bottom { animation: tpop-fx3 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both; }
+@keyframes tpop-fx3 { from { opacity: 0; transform: translateY(calc(34px * var(--tpop-s, 1))); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx4 .triplepopup-pop-wrap { animation: tpop-fx4 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx4 { from { opacity: 0; transform: translateY(calc(-70px * var(--tpop-s, 1))); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx5 .triplepopup-pop-in.triplepopup-pop-in-l { animation: tpop-fx5l 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.triplepopup-pop-entering.triplepopup-pop-fx5 .triplepopup-pop-in.triplepopup-pop-in-c { animation: tpop-fx5c 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.triplepopup-pop-entering.triplepopup-pop-fx5 .triplepopup-pop-in.triplepopup-pop-in-r { animation: tpop-fx5r 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.triplepopup-pop-entering.triplepopup-pop-fx5 .triplepopup-pop-bottom { animation: tpop-fade 0.4s ease 0.3s both; }
+@keyframes tpop-fx5l { from { opacity: 0; transform: translateX(calc(-120px * var(--tpop-s, 1))); } to { opacity: 1; transform: none; } }
+@keyframes tpop-fx5r { from { opacity: 0; transform: translateX(calc(120px * var(--tpop-s, 1))); } to { opacity: 1; transform: none; } }
+@keyframes tpop-fx5c { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx6 .triplepopup-pop-wrap { animation: tpop-fx6 0.7s ease-out both; }
+@keyframes tpop-fx6 { from { opacity: 0; filter: blur(18px); transform: scale(1.04); } to { opacity: 1; filter: blur(0); transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx7 .triplepopup-pop-in { animation: tpop-fx7 0.75s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--tpop-i, 0) * 100ms); }
+.triplepopup-pop-entering.triplepopup-pop-fx7 .triplepopup-pop-bottom { animation: tpop-fade 0.4s ease 0.45s both; }
+@keyframes tpop-fx7 { from { opacity: 0; transform: perspective(1200px) rotateY(-78deg); } to { opacity: 1; transform: perspective(1200px) rotateY(0deg); } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx8 .triplepopup-pop-wrap { animation: tpop-fx8 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes tpop-fx8 { from { opacity: 0; transform: scale(0.72); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx9 .triplepopup-pop-wrap { animation: tpop-fx9 0.75s cubic-bezier(0.65, 0, 0.35, 1) both; }
+@keyframes tpop-fx9 { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(-60px -60px -60px -60px); } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx10 .triplepopup-pop-in { animation: tpop-fx10 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--tpop-i, 0) * 80ms); }
+.triplepopup-pop-entering.triplepopup-pop-fx10 .triplepopup-pop-in.triplepopup-pop-in-l { --tpop-r: -9deg; }
+.triplepopup-pop-entering.triplepopup-pop-fx10 .triplepopup-pop-in.triplepopup-pop-in-c { --tpop-r: 5deg; }
+.triplepopup-pop-entering.triplepopup-pop-fx10 .triplepopup-pop-in.triplepopup-pop-in-r { --tpop-r: 10deg; }
+.triplepopup-pop-entering.triplepopup-pop-fx10 .triplepopup-pop-bottom { animation: tpop-fade 0.4s ease 0.4s both; }
+@keyframes tpop-fx10 { from { opacity: 0; transform: translateY(calc(-90px * var(--tpop-s, 1))) rotate(var(--tpop-r, 6deg)); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx11 .triplepopup-pop-wrap { animation: tpop-fx11 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx11 { from { opacity: 0; transform: translateY(calc(160px * var(--tpop-s, 1))); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx12 .triplepopup-pop-wrap { animation: tpop-fx12 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx12 { from { opacity: 0; transform: rotate(-10deg) scale(0.7); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx13 .triplepopup-pop-in.triplepopup-pop-in-l { animation: tpop-fx13l 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.triplepopup-pop-entering.triplepopup-pop-fx13 .triplepopup-pop-in.triplepopup-pop-in-c { z-index: 1; animation: tpop-fx13c 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.triplepopup-pop-entering.triplepopup-pop-fx13 .triplepopup-pop-in.triplepopup-pop-in-r { animation: tpop-fx13r 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.triplepopup-pop-entering.triplepopup-pop-fx13 .triplepopup-pop-bottom { animation: tpop-fade 0.4s ease 0.4s both; }
+@keyframes tpop-fx13l { from { opacity: 0; transform: translateX(105%) rotate(6deg) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes tpop-fx13r { from { opacity: 0; transform: translateX(-105%) rotate(-6deg) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes tpop-fx13c { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx14 .triplepopup-pop-wrap { transform-origin: 50% 0; animation: tpop-fx14 0.75s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx14 { from { opacity: 0; transform: rotateX(-82deg); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx15 .triplepopup-pop-in { animation: tpop-fx15 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--tpop-i, 0) * 120ms); }
+.triplepopup-pop-entering.triplepopup-pop-fx15 .triplepopup-pop-bottom { animation: tpop-fade 0.4s ease 0.4s both; }
+@keyframes tpop-fx15 { from { opacity: 0; transform: translateY(calc(60px * var(--tpop-s, 1))) scale(0.9); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx16 .triplepopup-pop-wrap { animation: tpop-fx16 0.8s cubic-bezier(0.65, 0, 0.35, 1) both; }
+@keyframes tpop-fx16 { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(120% at 50% 50%); } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx17 .triplepopup-pop-wrap { animation: tpop-fx17 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx17 { from { opacity: 0; transform: scale(1.28); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx18 .triplepopup-pop-wrap { animation: tpop-fx18 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx18 { from { opacity: 0; transform: translateX(calc(220px * var(--tpop-s, 1))); } to { opacity: 1; transform: none; } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx19 .triplepopup-pop-wrap { animation: tpop-fx19 0.8s cubic-bezier(0.65, 0, 0.35, 1) both; }
+@keyframes tpop-fx19 { from { clip-path: polygon(-60% -10%, -60% -10%, -110% 110%, -110% 110%); } to { clip-path: polygon(-60% -10%, 160% -10%, 110% 110%, -110% 110%); } }
+
+.triplepopup-pop-entering.triplepopup-pop-fx20 .triplepopup-pop-wrap { transform-origin: 0 50%; animation: tpop-fx20 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tpop-fx20 { from { opacity: 0; transform: rotateY(84deg); } to { opacity: 1; transform: none; } }
+
 /* 모바일 */
 @media (max-width: 767px) {
     #triplepopup-pop-root .triplepopup-pop-nav-btn { width: 40px; height: 40px; }
@@ -573,7 +702,9 @@
 /* 모션 최소화 선호 */
 @media (prefers-reduced-motion: reduce) {
     #triplepopup-pop-root,
-    #triplepopup-pop-root .triplepopup-pop-wrap { animation: none; }
+    #triplepopup-pop-root .triplepopup-pop-wrap,
+    #triplepopup-pop-root .triplepopup-pop-cell,
+    #triplepopup-pop-root .triplepopup-pop-bottom { animation: none !important; }
     #triplepopup-pop-root .triplepopup-pop-track,
     #triplepopup-pop-root .triplepopup-pop-media img { transition: none; }
 }

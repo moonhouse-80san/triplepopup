@@ -1,11 +1,12 @@
+<!--// 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com -->
 <div class="triplepopup-admin">
     <header class="triplepopup-head">
         <h2>팝업 모듈 관리</h2>
-        <p class="triplepopup-head-desc">사이트에 노출되는 레이어 팝업을 관리합니다.</p>
+        <p class="triplepopup-head-desc">사이트에 노출되는 레이어 팝업을 관리합니다.<br />모듈 설정과 동작 모듈설정은 화면 오른쪽에 따라다니는 <b>저장</b> 버튼으로 저장합니다.</p>
     </header>
 
     <!-- 모듈 설정 -->
-    <form method="post" action="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveConfig')}">
+    <form method="post" action="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveSettings')}" class="triplepopup-settings-form">
         <section class="triplepopup-card">
             <div class="triplepopup-card-head">모듈 설정</div>
             <div class="triplepopup-card-body">
@@ -26,17 +27,17 @@
                                 <input type="number" name="slide_interval" value="{$config->slide_interval}" min="1" max="60" step="1" class="triplepopup-input-flush triplepopup-input-spin" />
                                 <span class="triplepopup-suffix">초</span>
                             </div>
-                            <span class="triplepopup-hint">팝업 4개 이상일 때 슬라이드 적용</span>
+                            <span class="triplepopup-hint">화면에 보이는 수보다 팝업이 많으면 오른쪽에서 왼쪽으로 무한 반복</span>
                         </div>
                     </div>
                     <div class="triplepopup-form-row">
                         <label class="triplepopup-label">팝업 가로 크기</label>
                         <div class="triplepopup-control triplepopup-control-inline">
                             <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix triplepopup-ctl">
-                                <input type="number" name="popup_width" value="{$config->popup_width}" min="180" max="900" class="triplepopup-input-flush" />
+                                <input type="number" name="popup_width" value="<!--@if($config->popup_width > 0)-->{$config->popup_width}<!--@end-->" min="180" max="900" placeholder="자동" class="triplepopup-input-flush" />
                                 <span class="triplepopup-suffix">px</span>
                             </div>
-                            <span class="triplepopup-hint">카드 1장의 최대 가로폭 (180~900, 기본 420). 세로는 이미지·HTML에 맞춰 자동</span>
+                            <span class="triplepopup-hint">비워 두면(기본) 위의 <b>가로 배너 수</b>에 맞는 폭으로 자동 표시됩니다. 직접 입력하면 카드 1장의 가로폭(180~900)을 고정합니다.</span>
                         </div>
                     </div>
                     <div class="triplepopup-form-row">
@@ -60,9 +61,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="triplepopup-card-foot">
-                    <button type="submit" class="triplepopup-btn triplepopup-btn-primary">설정 저장</button>
-                </div>
             </div>
         </section>
     </form>
@@ -73,13 +71,13 @@
             배너 관리 <span class="triplepopup-card-head-sub">1~6번 순서대로 표시</span>
         </div>
         <div class="triplepopup-card-body">
-            <p class="triplepopup-note">각 배너의 <b>등록·수정</b> 버튼을 누르면 아래에 편집 영역이 펼쳐집니다. 왼쪽 손잡이를 <b>드래그</b>하여 순서를 바꿀 수 있고, 4개 이상 활성화하면 슬라이드로 전환됩니다.<br />텍스트 입력란 오른쪽 <b>지구본 아이콘</b>을 누르면 라이믹스 다국어를 설정할 수 있고, 접속 언어에 맞는 문구가 팝업에 표시됩니다.<br />상태의 <b>활성·비활성 배지</b>를 누르면 해당 배너의 노출 상태를 바로 전환할 수 있습니다.</p>
+            <p class="triplepopup-note">각 배너의 <b>등록·수정</b> 버튼을 누르면 아래에 편집 영역이 펼쳐집니다. 왼쪽 손잡이를 <b>드래그</b>하여 순서를 바꿀 수 있고, 화면에 보이는 수보다 많이 활성화하면 오른쪽에서 왼쪽으로 무한 반복됩니다.<br />텍스트 입력란 오른쪽 <b>지구본 아이콘</b>을 누르면 라이믹스 다국어를 설정할 수 있고, 접속 언어에 맞는 문구가 팝업에 표시됩니다.<br />상태의 <b>활성·비활성 배지</b>를 누르면 해당 배너의 노출 상태를 바로 전환할 수 있습니다.</p>
 
             <div class="triplepopup-table" data-order-url="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveOrder')}">
                 <div class="triplepopup-thead">
                     <div class="triplepopup-th triplepopup-col-order">배너순서</div>
                     <div class="triplepopup-th triplepopup-col-badge">상단 머리말</div>
-                    <div class="triplepopup-th triplepopup-col-img">이미지</div>
+                    <div class="triplepopup-th triplepopup-col-img">미디어</div>
                     <div class="triplepopup-th triplepopup-col-footer">하단 버튼</div>
                     <div class="triplepopup-th triplepopup-col-period">노출기간</div>
                     <div class="triplepopup-th triplepopup-col-active">상태</div>
@@ -96,18 +94,20 @@
                             <span class="triplepopup-order-no">{$slot->display_no}</span>
                         </div>
                         <div class="triplepopup-td triplepopup-col-badge">
-                            <!--@if($slot->exists && $slot->badge_text)-->
-                            <span class="triplepopup-dot" style="background:{$slot->badge_bg_color}"></span><span class="triplepopup-txt">{escape($slot->badge_text)}</span>
+                            <!--@if($slot->exists && $slot->badge_text_display)-->
+                            <span class="triplepopup-dot" style="background:{$slot->badge_bg_color}"></span><span class="triplepopup-txt">{escape($slot->badge_text_display)}</span>
                             <!--@else--><span class="triplepopup-muted">—</span><!--@end-->
                         </div>
                         <div class="triplepopup-td triplepopup-col-img">
-                            <!--@if($slot->body_image)-->
+                            <!--@if($slot->media_type === 'youtube')-->
+                            <span class="triplepopup-thumb triplepopup-thumb-yt" title="유튜브 영상"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+                            <!--@elseif($slot->body_image)-->
                             <img src="{$slot->body_image}" class="triplepopup-thumb" alt="" />
                             <!--@else--><span class="triplepopup-muted">없음</span><!--@end-->
                         </div>
                         <div class="triplepopup-td triplepopup-col-footer">
-                            <!--@if($slot->exists && $slot->footer_text)-->
-                            <span class="triplepopup-dot" style="background:{$slot->footer_bg_color}"></span><span class="triplepopup-txt">{escape($slot->footer_text)}</span>
+                            <!--@if($slot->exists && $slot->footer_text_display)-->
+                            <span class="triplepopup-dot" style="background:{$slot->footer_bg_color}"></span><span class="triplepopup-txt">{escape($slot->footer_text_display)}</span>
                             <!--@else--><span class="triplepopup-muted">—</span><!--@end-->
                         </div>
                         <div class="triplepopup-td triplepopup-col-period">
@@ -150,6 +150,70 @@
                             <input type="hidden" name="slot_number" value="{$slot->slot_number}" />
                             <div class="triplepopup-edit-title"><span class="triplepopup-edit-no">{$slot->display_no}</span>번 배너 편집</div>
                             <div class="triplepopup-edit-grid">
+                                <div class="triplepopup-field triplepopup-field-full">
+                                    <label>배너 종류</label>
+                                    <div class="triplepopup-seg" role="radiogroup">
+                                        <label class="triplepopup-seg-item">
+                                            <input type="radio" name="media_type" value="image" <!--@if($slot->media_type !== 'youtube')-->checked="checked"<!--@end--> />
+                                            <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>이미지</span>
+                                        </label>
+                                        <label class="triplepopup-seg-item">
+                                            <input type="radio" name="media_type" value="youtube" <!--@if($slot->media_type === 'youtube')-->checked="checked"<!--@end--> />
+                                            <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg>유튜브 영상</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="triplepopup-field triplepopup-field-full triplepopup-yt" data-media="youtube" hidden="hidden">
+                                    <label>유튜브 주소 <span class="triplepopup-label-hint">일반 영상 · 쇼츠 · 공유 주소 모두 가능</span></label>
+                                    <div class="triplepopup-inputwrap triplepopup-inputwrap-plain">
+                                        <input type="text" name="youtube_url" value="{escape($slot->youtube_url)}" class="triplepopup-input-flush" placeholder="https://www.youtube.com/watch?v=..." />
+                                    </div>
+                                    <p class="triplepopup-hint triplepopup-yt-status"></p>
+                                    <p class="triplepopup-hint">주소를 넣기 전에는 미리보기에 샘플 영상 화면이 나옵니다.<br />주소를 넣으면 미리보기에서 실제 영상이 소리 없이 재생됩니다.</p>
+
+                                    <div class="triplepopup-opts">
+                                        <label class="triplepopup-opt">
+                                            <input type="checkbox" name="yt_autoplay" value="Y" <!--@if($slot->yt_autoplay === 'Y')-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-opt-box"></span>
+                                            <span class="triplepopup-opt-text"><b>자동 재생</b><span>팝업이 뜨면 바로 재생</span></span>
+                                        </label>
+                                        <label class="triplepopup-opt">
+                                            <input type="checkbox" name="yt_mute" value="Y" <!--@if($slot->yt_mute === 'Y')-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-opt-box"></span>
+                                            <span class="triplepopup-opt-text"><b>음소거</b><span>소리 없이 재생</span></span>
+                                        </label>
+                                        <label class="triplepopup-opt">
+                                            <input type="checkbox" name="yt_loop" value="Y" <!--@if($slot->yt_loop === 'Y')-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-opt-box"></span>
+                                            <span class="triplepopup-opt-text"><b>반복 재생</b><span>끝나면 처음부터 다시</span></span>
+                                        </label>
+                                        <label class="triplepopup-opt">
+                                            <input type="checkbox" name="yt_controls" value="Y" <!--@if($slot->yt_controls === 'Y')-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-opt-box"></span>
+                                            <span class="triplepopup-opt-text"><b>재생 컨트롤 표시</b><span>재생바·음량 버튼 표시</span></span>
+                                        </label>
+                                        <label class="triplepopup-opt">
+                                            <input type="checkbox" name="yt_cover" value="Y" <!--@if($slot->yt_cover === 'Y')-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-opt-box"></span>
+                                            <span class="triplepopup-opt-text"><b>영상 꽉 채우기</b><span>여백 없이 확대 · 가장자리 잘림</span></span>
+                                        </label>
+                                        <label class="triplepopup-opt">
+                                            <input type="checkbox" name="yt_pause_slide" value="Y" <!--@if($slot->yt_pause_slide === 'Y')-->checked="checked"<!--@end--> />
+                                            <span class="triplepopup-opt-box"></span>
+                                            <span class="triplepopup-opt-text"><b>재생 중 슬라이드 멈춤</b><span>영상이 끝나면 다시 넘김</span></span>
+                                        </label>
+                                    </div>
+
+                                    <div class="triplepopup-yt-start">
+                                        <span class="triplepopup-yt-start-label">시작 위치</span>
+                                        <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix triplepopup-ctl">
+                                            <input type="number" name="yt_start" value="{$slot->yt_start}" min="0" max="86400" class="triplepopup-input-flush" />
+                                            <span class="triplepopup-suffix">초</span>
+                                        </div>
+                                    </div>
+                                    <p class="triplepopup-hint">자동 재생은 브라우저 정책 때문에 <b>음소거 상태에서만</b> 동작합니다.<br />유튜브 배너에는 이미지 위 타이틀과 서브문구가 표시되지 않습니다.<br />선택한 팝업 비율이 영상과 다르면 위아래 또는 좌우에 검은 여백이 생깁니다.<br /><b>영상 꽉 채우기</b>를 켜면 여백 대신 영상을 확대해 칸을 채우고 가장자리가 잘립니다.</p>
+                                </div>
                                 <div class="triplepopup-field">
                                     <label>머리말 텍스트 <span class="triplepopup-lang-tag">다국어</span></label>
                                     <div class="triplepopup-inputwrap">
@@ -241,12 +305,12 @@
                                     </select>
                                 </div>
 
-                                <div class="triplepopup-field triplepopup-field-full">
+                                <div class="triplepopup-field triplepopup-field-full" data-media="image">
                                     <label>이미지 위 타이틀 <span class="triplepopup-lang-tag">다국어</span> <span class="triplepopup-label-hint">에디토리얼 · 엔터로 줄바꿈 · 비우면 표시 안 됨</span></label>
                                     <textarea name="title_text" class="triplepopup-textarea lang_code x_full-width" data-lang-display="{escape($slot->title_text_display)}" rows="2" placeholder="예: 프리미엄&#10;웨딩 촬영">{escape($slot->title_text)}</textarea>
                                 </div>
 
-                                <div class="triplepopup-field triplepopup-field-full">
+                                <div class="triplepopup-field triplepopup-field-full" data-media="image">
                                     <label>이미지 위 서브문구 <span class="triplepopup-lang-tag">다국어</span> <span class="triplepopup-label-hint">엔터로 줄바꿈 · 비우면 표시 안 됨</span></label>
                                     <textarea name="sub_text" class="triplepopup-textarea lang_code x_full-width" data-lang-display="{escape($slot->sub_text_display)}" rows="2" placeholder="예: 6월 한정 예약 오픈">{escape($slot->sub_text)}</textarea>
                                 </div>
@@ -321,6 +385,16 @@
                                             <div class="triplepopup-pv-html triplepopup-pv-html-top" hidden="hidden"></div>
                                             <div class="triplepopup-preview-media">
                                                 <img class="triplepopup-pv-img" src="{$slot->preview_image}" alt="" <!--@if(!$slot->preview_image)-->hidden="hidden"<!--@end--> />
+                                                <div class="triplepopup-pv-yt" hidden="hidden">
+                                                    <div class="triplepopup-pv-ytbox">
+                                                        <div class="triplepopup-pv-ytmock">
+                                                            <span class="triplepopup-pv-ytplay"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+                                                            <span class="triplepopup-pv-ytcap">샘플 영상</span>
+                                                            <span class="triplepopup-pv-ytbar"><i></i></span>
+                                                        </div>
+                                                        <div class="triplepopup-pv-ytframe"></div>
+                                                    </div>
+                                                </div>
                                                 <div class="triplepopup-pv-noimg" <!--@if($slot->preview_image)-->hidden="hidden"<!--@end-->>이미지를 등록하면<br />여기에 표시됩니다</div>
                                                 <span class="triplepopup-pv-badge" style="background:{$slot->badge_bg_color};color:{$slot->badge_text_color}" hidden="hidden"></span>
                                                 <div class="triplepopup-pv-overlay" hidden="hidden">
@@ -336,7 +410,7 @@
                                     </div>
                                 </div>
 
-                                <div class="triplepopup-field triplepopup-field-full">
+                                <div class="triplepopup-field triplepopup-field-full" data-media="image">
                                     <label>본문 이미지</label>
                                     <div class="triplepopup-bgpresets">
                                         <label class="triplepopup-bgpreset triplepopup-bgpreset-none" title="직접 업로드한 이미지 사용">
@@ -357,7 +431,8 @@
                                         <!--@end-->
                                         <div class="triplepopup-upload-body">
                                             <input type="file" name="body_image" accept="image/jpeg,image/png,image/gif,image/webp" class="triplepopup-file" />
-                                            <p class="triplepopup-hint">권장 가로 <b>420px</b> — 세로는 이미지 비율에 맞춰 자동 조정됩니다. (화면을 넘을 경우 최대 높이로 제한)</p>
+                                            <p class="triplepopup-hint triplepopup-rec-hint" data-mode="auto">권장 가로 <b>420px</b> — 세로는 이미지 비율에 맞춰 자동 조정됩니다. (화면을 넘을 경우 최대 높이로 제한)</p>
+                                        <p class="triplepopup-hint triplepopup-rec-hint" data-mode="fixed" hidden="hidden">권장 크기 <b class="triplepopup-rec-size">840 × 960px</b> (비율 <span class="triplepopup-rec-ratio">7:8</span>)<br />다른 크기는 가운데를 기준으로 잘려 모든 배너가 같은 크기로 표시됩니다.</p>
                                             <!--@if($slot->body_image)-->
                                             <p class="triplepopup-replace-note">새 파일을 선택하면 현재 이미지가 교체되며 기존 파일은 삭제됩니다.</p>
                                             <label class="triplepopup-langimg-del"><input type="checkbox" name="body_image_delete" value="Y" /> 현재 이미지 삭제</label>
@@ -434,7 +509,7 @@
                                 </div>
 
                                 <!--@if(count($slot->lang_images) > 1)-->
-                                <div class="triplepopup-field triplepopup-field-full">
+                                <div class="triplepopup-field triplepopup-field-full" data-media="image">
                                     <label>언어별 이미지 <span class="triplepopup-lang-tag">다국어</span> <span class="triplepopup-label-hint">접속 언어에 맞는 이미지를 표시 · 비우면 위 본문 이미지 사용</span></label>
                                     <div class="triplepopup-langimg">
                                         <div class="triplepopup-langimg-tabs" role="tablist">
@@ -450,7 +525,7 @@
                                                 </div>
                                                 <div class="triplepopup-upload-body">
                                                     <input type="file" name="body_image_lang[{$li->code}]" accept="image/jpeg,image/png,image/gif,image/webp" class="triplepopup-file" />
-                                                    <p class="triplepopup-hint"><b>{escape($li->name)}</b> 접속자에게 표시할 이미지 · 권장 420 × 480px</p>
+                                                    <p class="triplepopup-hint"><b>{escape($li->name)}</b> 접속자에게 표시할 이미지 · 권장 <span class="triplepopup-rec-size" data-auto="420 × 480px">420 × 480px</span></p>
                                                     <!--@if($li->image)-->
                                                     <label class="triplepopup-langimg-del"><input type="checkbox" name="body_image_lang_delete[{$li->code}]" value="Y" /> 이 언어 이미지 삭제 (기본 이미지로 표시)</label>
                                                     <!--@end-->
@@ -511,8 +586,410 @@
         </div>
     </section>
 
+    <section class="triplepopup-card triplepopup-ratio triplepopup-fold triplepopup-is-closed" data-save-url="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveRatio')}">
+        <div class="triplepopup-card-head">
+            팝업 비율·배치 설정 <span class="triplepopup-card-head-sub">선택하면 바로 저장</span>
+            <span class="triplepopup-ratio-status" aria-live="polite"></span>
+        </div>
+        <div class="triplepopup-card-body">
+            <p class="triplepopup-note"><b>원본 크기 그대로</b>를 고르면 배너마다 이미지 높이가 달라질 수 있습니다.<br />비율을 하나 고르면 모든 배너가 같은 크기로 표시됩니다.<br /><b>1번 배너의 이미지 크기가 기준</b>이 됩니다.<br />다른 배너에 크기가 다른 이미지를 올리면 경고창으로 알려 줍니다.<br />유튜브 영상 배너를 쓰려면 <b>유튜브 비율</b>을 고르는 것이 가장 깔끔합니다.<br /><b>가로 배너 수</b>는 한 화면에 나란히 보이는 배너 수입니다.<br />수가 적을수록 배너가 크게 나오고, 화면이 좁은 기기에서는 자동으로 줄어듭니다.<br />표시된 가로 폭(px)은 넓은 화면 기준의 최대값입니다.<br /><b>유튜브 16:9</b> 비율을 고르면 영상이 잘 보이도록 배너 폭이 더 넓어집니다.</p>
+
+            <div class="triplepopup-ratio-layout">
+                <div class="triplepopup-ratio-groups">
+            <div class="triplepopup-ratio-row">
+                <div class="triplepopup-ratio-rowhead">
+                    <span class="triplepopup-ratio-rowname">정비율</span>
+                    <span class="triplepopup-ratio-rowdesc">정사각형</span>
+                </div>
+                <div class="triplepopup-ratio-items">
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '1:1')-->triplepopup-is-checked<!--@end-->" data-w="1" data-h="1" data-rec="840 × 840">
+                        <input type="radio" name="popup_ratio" value="1:1" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '1:1')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="width:100%;aspect-ratio:1/1"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">1:1</span>
+                            <span class="triplepopup-ratio-meta">840 × 840px</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="triplepopup-ratio-row">
+                <div class="triplepopup-ratio-rowhead">
+                    <span class="triplepopup-ratio-rowname">세로 비율</span>
+                    <span class="triplepopup-ratio-rowdesc">세로로 긴 포스터형</span>
+                </div>
+                <div class="triplepopup-ratio-items">
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '3:4')-->triplepopup-is-checked<!--@end-->" data-w="3" data-h="4" data-rec="840 × 1120">
+                        <input type="radio" name="popup_ratio" value="3:4" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '3:4')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="height:100%;aspect-ratio:3/4"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">3:4</span>
+                            <span class="triplepopup-ratio-meta">840 × 1120px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '4:5')-->triplepopup-is-checked<!--@end-->" data-w="4" data-h="5" data-rec="840 × 1050">
+                        <input type="radio" name="popup_ratio" value="4:5" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '4:5')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="height:100%;aspect-ratio:4/5"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">4:5</span>
+                            <span class="triplepopup-ratio-meta">840 × 1050px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '2:3')-->triplepopup-is-checked<!--@end-->" data-w="2" data-h="3" data-rec="840 × 1260">
+                        <input type="radio" name="popup_ratio" value="2:3" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '2:3')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="height:100%;aspect-ratio:2/3"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">2:3</span>
+                            <span class="triplepopup-ratio-meta">840 × 1260px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '7:8')-->triplepopup-is-checked<!--@end-->" data-w="7" data-h="8" data-rec="840 × 960">
+                        <input type="radio" name="popup_ratio" value="7:8" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '7:8')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="height:100%;aspect-ratio:7/8"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">7:8 <span class="triplepopup-module-tag">기존 기본</span></span>
+                            <span class="triplepopup-ratio-meta">840 × 960px</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="triplepopup-ratio-row">
+                <div class="triplepopup-ratio-rowhead">
+                    <span class="triplepopup-ratio-rowname">가로 비율</span>
+                    <span class="triplepopup-ratio-rowdesc">가로로 넓은 배너형</span>
+                </div>
+                <div class="triplepopup-ratio-items">
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '4:3')-->triplepopup-is-checked<!--@end-->" data-w="4" data-h="3" data-rec="840 × 630">
+                        <input type="radio" name="popup_ratio" value="4:3" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '4:3')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="width:100%;aspect-ratio:4/3"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">4:3</span>
+                            <span class="triplepopup-ratio-meta">840 × 630px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '3:2')-->triplepopup-is-checked<!--@end-->" data-w="3" data-h="2" data-rec="840 × 560">
+                        <input type="radio" name="popup_ratio" value="3:2" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '3:2')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="width:100%;aspect-ratio:3/2"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">3:2</span>
+                            <span class="triplepopup-ratio-meta">840 × 560px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-ratio-item <!--@if($config->popup_ratio === '2:1')-->triplepopup-is-checked<!--@end-->" data-w="2" data-h="1" data-rec="840 × 420">
+                        <input type="radio" name="popup_ratio" value="2:1" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '2:1')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="width:100%;aspect-ratio:2/1"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">2:1</span>
+                            <span class="triplepopup-ratio-meta">840 × 420px</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="triplepopup-ratio-row">
+                <div class="triplepopup-ratio-rowhead">
+                    <span class="triplepopup-ratio-rowname">유튜브 비율</span>
+                    <span class="triplepopup-ratio-rowdesc">영상 크기에 꼭 맞춤</span>
+                </div>
+                <div class="triplepopup-ratio-items">
+                    <label class="triplepopup-ratio-item triplepopup-ratio-yt <!--@if($config->popup_ratio === '16:9')-->triplepopup-is-checked<!--@end-->" data-w="16" data-h="9" data-rec="1280 × 720">
+                        <input type="radio" name="popup_ratio" value="16:9" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '16:9')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="width:100%;aspect-ratio:16/9"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">16:9 <span class="triplepopup-module-tag">일반 영상</span></span>
+                            <span class="triplepopup-ratio-meta">1280 × 720px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-ratio-item triplepopup-ratio-yt <!--@if($config->popup_ratio === '9:16')-->triplepopup-is-checked<!--@end-->" data-w="9" data-h="16" data-rec="720 × 1280">
+                        <input type="radio" name="popup_ratio" value="9:16" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === '9:16')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape"><i style="height:100%;aspect-ratio:9/16"></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">9:16 <span class="triplepopup-module-tag">쇼츠</span></span>
+                            <span class="triplepopup-ratio-meta">720 × 1280px</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="triplepopup-ratio-row">
+                <div class="triplepopup-ratio-rowhead">
+                    <span class="triplepopup-ratio-rowname">자유 비율</span>
+                    <span class="triplepopup-ratio-rowdesc">크기를 맞추지 않음</span>
+                </div>
+                <div class="triplepopup-ratio-items">
+                    <label class="triplepopup-ratio-item triplepopup-ratio-auto <!--@if($config->popup_ratio === 'auto')-->triplepopup-is-checked<!--@end-->" data-w="0" data-h="0" data-rec="">
+                        <input type="radio" name="popup_ratio" value="auto" class="triplepopup-ratio-input" <!--@if($config->popup_ratio === 'auto')-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-ratio-shape triplepopup-ratio-shape-auto"><i></i><i></i><i></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">원본 크기 그대로</span>
+                            <span class="triplepopup-ratio-meta">배너마다 높이가 달라질 수 있음</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="triplepopup-ratio-row triplepopup-cols" data-save-url="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveCols')}">
+                <div class="triplepopup-ratio-rowhead">
+                    <span class="triplepopup-ratio-rowname">가로 배너 수</span>
+                    <span class="triplepopup-ratio-rowdesc">한 화면에 보이는 수</span>
+                </div>
+                <div class="triplepopup-ratio-items">
+                    <label class="triplepopup-cols-item <!--@if($config->popup_cols == 1)-->triplepopup-is-checked<!--@end-->">
+                        <input type="radio" name="popup_cols" value="1" class="triplepopup-cols-input" <!--@if($config->popup_cols == 1)-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-cols-shape"><i></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">1개</span>
+                            <span class="triplepopup-ratio-meta">전체 폭 560px</span>
+                            <span class="triplepopup-ratio-meta">배너 560px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-cols-item <!--@if($config->popup_cols == 2)-->triplepopup-is-checked<!--@end-->">
+                        <input type="radio" name="popup_cols" value="2" class="triplepopup-cols-input" <!--@if($config->popup_cols == 2)-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-cols-shape"><i></i><i></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">2개</span>
+                            <span class="triplepopup-ratio-meta">전체 폭 980px</span>
+                            <span class="triplepopup-ratio-meta">배너 480px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-cols-item <!--@if($config->popup_cols == 3)-->triplepopup-is-checked<!--@end-->">
+                        <input type="radio" name="popup_cols" value="3" class="triplepopup-cols-input" <!--@if($config->popup_cols == 3)-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-cols-shape"><i></i><i></i><i></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">3개 <span class="triplepopup-module-tag">기본</span></span>
+                            <span class="triplepopup-ratio-meta">전체 폭 1,300px</span>
+                            <span class="triplepopup-ratio-meta">배너 420px</span>
+                        </span>
+                    </label>
+                    <label class="triplepopup-cols-item <!--@if($config->popup_cols == 4)-->triplepopup-is-checked<!--@end-->">
+                        <input type="radio" name="popup_cols" value="4" class="triplepopup-cols-input" <!--@if($config->popup_cols == 4)-->checked="checked"<!--@end--> />
+                        <span class="triplepopup-cols-shape"><i></i><i></i><i></i><i></i></span>
+                        <span class="triplepopup-ratio-text">
+                            <span class="triplepopup-ratio-name">4개</span>
+                            <span class="triplepopup-ratio-meta">전체 폭 1,580px</span>
+                            <span class="triplepopup-ratio-meta">배너 380px</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+                </div>
+
+                <div class="triplepopup-ratio-stage">
+                    <div class="triplepopup-ratio-stage-label">배치 미리보기</div>
+                    <div class="triplepopup-ratio-stage-view">
+                        <div class="triplepopup-ratio-mini"><i></i><b></b></div>
+                        <div class="triplepopup-ratio-mini"><i></i><b></b></div>
+                        <div class="triplepopup-ratio-mini"><i></i><b></b></div>
+                        <div class="triplepopup-ratio-mini"><i></i><b></b></div>
+                    </div>
+                    <div class="triplepopup-ratio-stage-size">
+                        <span>가로 <b class="triplepopup-cols-cur"></b></span>
+                        <span>전체 폭 <b class="triplepopup-cols-total"></b></span>
+                        <span>배너 한 장 <b class="triplepopup-cols-card"></b></span>
+                    </div>
+                    <div class="triplepopup-ratio-stage-info">
+                        <b class="triplepopup-ratio-cur"></b>
+                        <span class="triplepopup-ratio-recline">권장 이미지 <span class="triplepopup-ratio-rec"></span>px</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="triplepopup-card triplepopup-fx triplepopup-fold triplepopup-is-closed" data-save-url="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveEffect')}">
+        <div class="triplepopup-card-head">
+            팝업 등장 효과 <span class="triplepopup-card-head-sub">선택하면 바로 저장</span>
+            <span class="triplepopup-fx-status" aria-live="polite"></span>
+        </div>
+        <div class="triplepopup-card-body">
+            <p class="triplepopup-note">팝업이 처음 나타날 때의 움직임을 고릅니다.<br />효과를 누르면 오른쪽에서 바로 재생됩니다.<br /><b>실제 팝업으로 보기</b>를 누르면 지금 등록된 배너로 화면 전체에서 확인할 수 있습니다.</p>
+
+            <div class="triplepopup-ratio-layout">
+                <div class="triplepopup-fx-items">
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 1)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="1" class="triplepopup-fx-input" <!--@if($config->popup_effect == 1)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">1</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">페이드 업</span>
+                                <span class="triplepopup-fx-meta">살짝 떠오르며 나타남</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 2)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="2" class="triplepopup-fx-input" <!--@if($config->popup_effect == 2)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">2</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">줌 인</span>
+                                <span class="triplepopup-fx-meta">작은 크기에서 커지며 나타남</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 3)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="3" class="triplepopup-fx-input" <!--@if($config->popup_effect == 3)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">3</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">순차 등장</span>
+                                <span class="triplepopup-fx-meta">한 장씩 차례로 올라옴</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 4)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="4" class="triplepopup-fx-input" <!--@if($config->popup_effect == 4)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">4</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">위에서 내려오기</span>
+                                <span class="triplepopup-fx-meta">화면 위에서 부드럽게 내려옴</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 5)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="5" class="triplepopup-fx-input" <!--@if($config->popup_effect == 5)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">5</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">양옆에서 모이기</span>
+                                <span class="triplepopup-fx-meta">좌우 배너가 가운데로 모임</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 6)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="6" class="triplepopup-fx-input" <!--@if($config->popup_effect == 6)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">6</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">흐림에서 또렷하게</span>
+                                <span class="triplepopup-fx-meta">뿌옇다가 선명해짐</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 7)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="7" class="triplepopup-fx-input" <!--@if($config->popup_effect == 7)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">7</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">카드 뒤집기</span>
+                                <span class="triplepopup-fx-meta">입체로 돌아서 펼쳐짐</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 8)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="8" class="triplepopup-fx-input" <!--@if($config->popup_effect == 8)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">8</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">통통 튀기</span>
+                                <span class="triplepopup-fx-meta">살짝 커졌다가 제자리로</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 9)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="9" class="triplepopup-fx-input" <!--@if($config->popup_effect == 9)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">9</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">커튼 열기</span>
+                                <span class="triplepopup-fx-meta">가운데에서 양옆으로 열림</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 10)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="10" class="triplepopup-fx-input" <!--@if($config->popup_effect == 10)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">10</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">기울어 떨어지기</span>
+                                <span class="triplepopup-fx-meta">기울어진 채 떨어져 자리 잡음</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 11)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="11" class="triplepopup-fx-input" <!--@if($config->popup_effect == 11)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">11</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">아래에서 올라오기</span>
+                                <span class="triplepopup-fx-meta">아래에서 크게 밀려 올라옴</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 12)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="12" class="triplepopup-fx-input" <!--@if($config->popup_effect == 12)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">12</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">돌면서 등장</span>
+                                <span class="triplepopup-fx-meta">살짝 회전하며 커짐</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 13)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="13" class="triplepopup-fx-input" <!--@if($config->popup_effect == 13)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">13</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">부채 펼치기</span>
+                                <span class="triplepopup-fx-meta">겹쳐 있다가 좌우로 펼쳐짐</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 14)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="14" class="triplepopup-fx-input" <!--@if($config->popup_effect == 14)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">14</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">위에서 펼치기</span>
+                                <span class="triplepopup-fx-meta">접힌 판이 아래로 펼쳐짐</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 15)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="15" class="triplepopup-fx-input" <!--@if($config->popup_effect == 15)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">15</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">파도타기</span>
+                                <span class="triplepopup-fx-meta">한 장씩 튀어 오르며 이어짐</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 16)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="16" class="triplepopup-fx-input" <!--@if($config->popup_effect == 16)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">16</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">원형으로 열기</span>
+                                <span class="triplepopup-fx-meta">가운데 원이 커지며 드러남</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 17)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="17" class="triplepopup-fx-input" <!--@if($config->popup_effect == 17)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">17</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">줌 아웃</span>
+                                <span class="triplepopup-fx-meta">크게 보였다가 제 크기로</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 18)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="18" class="triplepopup-fx-input" <!--@if($config->popup_effect == 18)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">18</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">옆에서 밀려오기</span>
+                                <span class="triplepopup-fx-meta">오른쪽에서 통째로 들어옴</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 19)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="19" class="triplepopup-fx-input" <!--@if($config->popup_effect == 19)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">19</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">사선으로 닦기</span>
+                                <span class="triplepopup-fx-meta">대각선으로 닦아내듯 드러남</span>
+                            </span>
+                        </label>
+                        <label class="triplepopup-fx-item <!--@if($config->popup_effect == 20)-->triplepopup-is-checked<!--@end-->">
+                            <input type="radio" name="popup_effect" value="20" class="triplepopup-fx-input" <!--@if($config->popup_effect == 20)-->checked="checked"<!--@end--> />
+                            <span class="triplepopup-fx-no">20</span>
+                            <span class="triplepopup-fx-text">
+                                <span class="triplepopup-fx-name">문 열기</span>
+                                <span class="triplepopup-fx-meta">왼쪽을 축으로 문처럼 열림</span>
+                            </span>
+                        </label>
+                </div>
+
+                <div class="triplepopup-ratio-stage triplepopup-fx-stage">
+                    <div class="triplepopup-ratio-stage-label">효과 미리보기</div>
+                    <div class="triplepopup-fx-view">
+                        <div class="triplepopup-pop-wrap">
+                            <div class="triplepopup-pop-track">
+                                <div class="triplepopup-pop-card triplepopup-pop-in triplepopup-pop-in-l" style="--tpop-i:0"><i><em>playwebon.com</em></i><b>만든이 플레이웹</b></div>
+                                <div class="triplepopup-pop-card triplepopup-pop-in triplepopup-pop-in-c" style="--tpop-i:1"><i><em>playwebon.com</em></i><b>만든이 플레이웹</b></div>
+                                <div class="triplepopup-pop-card triplepopup-pop-in triplepopup-pop-in-r" style="--tpop-i:2"><i><em>playwebon.com</em></i><b>만든이 플레이웹</b></div>
+                            </div>
+                            <div class="triplepopup-pop-bottom"><i></i><i></i></div>
+                        </div>
+                    </div>
+                    <div class="triplepopup-ratio-stage-info">
+                        <b class="triplepopup-fx-cur"></b>
+                        <button type="button" class="triplepopup-fx-replay">다시 재생</button>
+                    </div>
+                    <div class="triplepopup-fx-actions">
+                        <button type="button" class="triplepopup-btn triplepopup-fx-open">실제 팝업으로 보기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- 동작 모듈설정 (맨 아래 배치) -->
-    <form method="post" action="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveModules')}">
+    <form method="post" action="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveSettings')}" class="triplepopup-settings-form">
         <section class="triplepopup-card">
             <div class="triplepopup-card-head">
                 동작 모듈설정 <span class="triplepopup-card-head-sub">팝업을 노출할 페이지(모듈) 선택</span>
@@ -521,6 +998,7 @@
                 <p class="triplepopup-note">선택한 모듈에서만 팝업이 노출됩니다. <b>아무것도 선택하지 않으면 모든 페이지에 노출</b>됩니다.</p>
 
                 <!--@if($modules)-->
+                <input type="hidden" name="has_targets" value="Y" />
                 <div class="triplepopup-modtoolbar">
                     <div class="triplepopup-modtools">
                         <button type="button" class="triplepopup-btn triplepopup-btn-ghost triplepopup-modules-all">전체 선택</button>
@@ -540,6 +1018,7 @@
                         <span class="triplepopup-module-text">
                             <span class="triplepopup-module-name">{escape($m->title)}<!--@if($m->is_main)--> <span class="triplepopup-module-tag">메인</span><!--@end--></span>
                             <span class="triplepopup-module-meta">{escape($m->mid)} <span class="triplepopup-module-sep">·</span> {escape($m->module_type)}</span>
+                            <button type="button" class="triplepopup-module-srl" data-srl="{$m->module_srl}" title="클릭하면 모듈 번호가 복사됩니다">모듈 번호 {$m->module_srl}</button>
                         </span>
                     </label>
                     <!--@end-->
@@ -547,10 +1026,6 @@
                 <!--@else-->
                 <p class="triplepopup-empty-modules">표시할 모듈이 없습니다.</p>
                 <!--@end-->
-
-                <div class="triplepopup-card-foot">
-                    <button type="submit" class="triplepopup-btn triplepopup-btn-primary">설정 저장</button>
-                </div>
             </div>
         </section>
     </form>
@@ -565,8 +1040,12 @@
                     <dd>{escape($moduleInfo->title)}</dd>
                 </div>
                 <div class="triplepopup-about-row">
-                    <dt>버전</dt>
+                    <dt>최종 버전</dt>
                     <dd class="triplepopup-about-ver">v{escape($moduleInfo->version)}</dd>
+                </div>
+                <div class="triplepopup-about-row">
+                    <dt>최종 업데이트</dt>
+                    <dd class="triplepopup-about-ver">{escape($moduleInfo->date)}</dd>
                 </div>
                 <div class="triplepopup-about-row">
                     <dt>만든이</dt>
@@ -583,4 +1062,21 @@
             </dl>
         </div>
     </section>
+
+    <div class="triplepopup-float" data-state="idle" data-save-url="{getUrl('','module','triplepopup','act','procTriplepopupAdminSaveSettings')}">
+        <button type="button" class="triplepopup-float-btn triplepopup-float-save" title="모듈 설정·동작 모듈설정, 수정 중인 배너를 저장합니다">
+            <svg class="triplepopup-float-ico-save" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.5a4 4 0 0 1-.5 8z"/><polyline points="9.5 13.5 11.5 15.5 15 12"/></svg>
+            <svg class="triplepopup-float-ico-done" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7"/></svg>
+            <span class="triplepopup-float-label">저장</span>
+            <span class="triplepopup-float-count" hidden="hidden"></span>
+        </button>
+        <button type="button" class="triplepopup-float-btn triplepopup-float-preview" title="지금 설정으로 실제 팝업을 띄워 봅니다">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/></svg>
+            <span>미리보기</span>
+        </button>
+        <button type="button" class="triplepopup-float-btn triplepopup-float-top" title="화면 맨 위로 이동합니다">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 14 12 8 18 14"/></svg>
+            <span>맨 위로</span>
+        </button>
+    </div>
 </div>

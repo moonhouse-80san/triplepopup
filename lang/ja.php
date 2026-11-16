@@ -1,4 +1,5 @@
 <?php
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 $lang->tp_today_close = '今日は表示しない';
 $lang->tp_days_close = '%d日間閉じる';
 $lang->tp_close = '閉じる';

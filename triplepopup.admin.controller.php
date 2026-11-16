@@ -1,4 +1,5 @@
 <?php
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 class triplepopupAdminController extends triplepopup
 {
     function init() {}
@@ -87,6 +88,17 @@ class triplepopupAdminController extends triplepopup
         return getNotEncodedUrl('', 'module', 'triplepopup', 'act', 'dispTriplepopupAdminIndex');
     }
 
+    /** 모듈 설정(config)의 일부 값만 갱신 */
+    private function _updateConfig(array $values)
+    {
+        $config = getModel('module')->getModuleConfig('triplepopup');
+        if (!$config) $config = new stdClass();
+        foreach ($values as $key => $value) {
+            $config->{$key} = $value;
+        }
+        getController('module')->updateModuleConfig('triplepopup', $config);
+    }
+
     /** 드래그로 변경된 배너 표시 순서를 config에 저장 (AJAX) */
     function procTriplepopupAdminSaveOrder()
     {
@@ -102,14 +114,7 @@ class triplepopupAdminController extends triplepopup
             if (!in_array($i, $order, true)) $order[] = $i;
         }
 
-        $oModuleModel = getModel('module');
-        $config = $oModuleModel->getModuleConfig('triplepopup');
-        if (!$config) $config = new stdClass();
-        $config->slot_order = implode(',', $order);
-
-        $oModuleController = getController('module');
-        $oModuleController->updateModuleConfig('triplepopup', $config);
-
+        $this->_updateConfig(array('slot_order' => implode(',', $order)));
         $this->setMessage('순서가 변경되었습니다.');
     }
 
@@ -141,46 +146,73 @@ class triplepopupAdminController extends triplepopup
         return $result;
     }
 
-    function procTriplepopupAdminSaveConfig()
+    /** 모듈 설정 + 동작 모듈설정 저장 (AJAX — 화면 오른쪽 저장 막대) */
+    function procTriplepopupAdminSaveSettings()
     {
-        $oModuleModel = getModel('module');
-        $config = $oModuleModel->getModuleConfig('triplepopup');
-        if (!$config) $config = new stdClass();
+        Context::setResponseMethod('JSON');
 
-        $config->slide_interval = max(1, (int)Context::get('slide_interval'));
-        $config->is_active      = Context::get('is_active') === 'Y' ? 'Y' : 'N';
-        // 카드 가로 폭: 180~900px (기본 420)
-        $w = (int)Context::get('popup_width');
-        if ($w < 180) $w = 180;
-        if ($w > 900) $w = 900;
-        $config->popup_width = $w;
-        // 팝업창 닫는 날짜(닫기 후 다시 보이지 않는 일수): 1~365일 (기본 1 = 하루)
-        $config->close_days = max(1, min(365, (int)Context::get('close_days')));
-        // 팝업창 자동 종료 시간: 0~3600초 (기본 0 = 자동 종료 안 함)
-        $config->auto_close = max(0, min(3600, (int)Context::get('auto_close')));
+        $width = (int)Context::get('popup_width');
+        $values = array(
+            'is_active'      => Context::get('is_active') === 'Y' ? 'Y' : 'N',
+            'slide_interval' => max(1, min(60, (int)Context::get('slide_interval'))),
+            // 카드 가로 폭: 비우면(0) 가로 배너 수에 맞춰 자동, 입력하면 180~900px
+            'popup_width'    => ($width > 0) ? max(180, min(900, $width)) : 0,
+            // 팝업창 닫는 날짜(닫기 후 다시 보이지 않는 일수): 1~365일 (기본 1 = 하루)
+            'close_days'     => max(1, min(365, (int)Context::get('close_days'))),
+            // 팝업창 자동 종료 시간: 0~3600초 (기본 0 = 자동 종료 안 함)
+            'auto_close'     => max(0, min(3600, (int)Context::get('auto_close'))),
+        );
+        // 동작 모듈 목록이 화면에 있을 때만 저장 (미선택 = 전체 모듈에 노출)
+        if (Context::get('has_targets') === 'Y') {
+            $sort = Context::get('module_sort');
+            $values['target_mids'] = $this->_normalizeTargetMids(Context::get('target_mids'));
+            $values['module_sort'] = in_array($sort, array('title', 'mid', 'created'), true) ? $sort : 'title';
+        }
 
-        $oModuleController = getController('module');
-        $oModuleController->updateModuleConfig('triplepopup', $config);
-
+        $this->_updateConfig($values);
         $this->setMessage('저장되었습니다.');
-        $this->setRedirectUrl($this->_getAdminReturnUrl());
     }
 
-    /** 동작 모듈(노출 대상 mid) 설정 저장 — 미선택 시 전체 모듈에 노출 */
-    function procTriplepopupAdminSaveModules()
+    /** 팝업 비율 저장 (AJAX — 선택 즉시) */
+    function procTriplepopupAdminSaveRatio()
     {
-        $oModuleModel = getModel('module');
-        $config = $oModuleModel->getModuleConfig('triplepopup');
-        if (!$config) $config = new stdClass();
+        Context::setResponseMethod('JSON');
 
-        $config->target_mids = $this->_normalizeTargetMids(Context::get('target_mids'));
-        $config->module_sort = in_array(Context::get('module_sort'), array('title', 'mid', 'created'), true) ? Context::get('module_sort') : 'title';
+        $ratio = trim((string)Context::get('popup_ratio'));
+        if (!in_array($ratio, $this->getRatioList(), true)) {
+            return $this->setError(-1, '선택할 수 없는 비율입니다.');
+        }
 
-        $oModuleController = getController('module');
-        $oModuleController->updateModuleConfig('triplepopup', $config);
-
+        $this->_updateConfig(array('popup_ratio' => $ratio));
         $this->setMessage('저장되었습니다.');
-        $this->setRedirectUrl($this->_getAdminReturnUrl());
+    }
+
+    /** 한 화면에 보이는 가로 배너 수(1~4) 저장 (AJAX — 선택 즉시) */
+    function procTriplepopupAdminSaveCols()
+    {
+        Context::setResponseMethod('JSON');
+
+        $cols = (int)Context::get('popup_cols');
+        if ($cols < 1 || $cols > 4) {
+            return $this->setError(-1, '선택할 수 없는 배너 수입니다.');
+        }
+
+        $this->_updateConfig(array('popup_cols' => $cols));
+        $this->setMessage('저장되었습니다.');
+    }
+
+    /** 팝업 등장 효과(1~20) 저장 (AJAX — 선택 즉시) */
+    function procTriplepopupAdminSaveEffect()
+    {
+        Context::setResponseMethod('JSON');
+
+        $effect = (int)Context::get('popup_effect');
+        if ($effect < 1 || $effect > self::EFFECT_COUNT) {
+            return $this->setError(-1, '선택할 수 없는 효과입니다.');
+        }
+
+        $this->_updateConfig(array('popup_effect' => $effect));
+        $this->setMessage('저장되었습니다.');
     }
 
     /**
@@ -247,6 +279,24 @@ class triplepopupAdminController extends triplepopup
         if ($slot_number < 1 || $slot_number > 6) {
             return $this->setError(-1, '잘못된 배너 번호입니다.');
         }
+
+        // 배너 종류(이미지/유튜브)와 유튜브 주소·재생 옵션: 업로드 처리 전에 검증하여 실패 시 고아 파일이 남지 않게 한다
+        $mediaType  = (Context::get('media_type') === 'youtube') ? 'youtube' : 'image';
+        $youtubeUrl = trim((string)Context::get('youtube_url'));
+        $yt = $this->parseYoutubeUrl($youtubeUrl);
+        if ($mediaType === 'youtube' && !$yt) {
+            return $this->setError(-1, '유튜브 주소를 확인해 주세요.');
+        }
+        if (!$yt) $youtubeUrl = '';
+        if (strlen($youtubeUrl) > 300) {
+            return $this->setError(-1, '유튜브 주소는 300자 이하로 입력해 주세요.');
+        }
+        $ytOpt = array();
+        foreach (array_keys($this->getYoutubeOptionDefaults()) as $key) {
+            $ytOpt[$key] = (Context::get('yt_' . $key) === 'Y') ? 'Y' : 'N';
+        }
+        if ($ytOpt['autoplay'] === 'Y') $ytOpt['mute'] = 'Y'; // 자동 재생은 음소거 상태에서만 동작
+        $ytOpt['start'] = max(0, min(86400, (int)Context::get('yt_start')));
 
         // 이미지 위 HTML: 업로드 처리 전에 검증하여 실패 시 고아 파일이 남지 않게 한다.
         // HTMLFilter 로 script · 이벤트 속성 · javascript: 링크 등 XSS 요소를 제거한 값만 저장 (class 와 에디터 컴포넌트는 허용)
@@ -351,6 +401,9 @@ class triplepopupAdminController extends triplepopup
         $args->body_image      = $body_image;
         $args->body_preset     = $new_uploaded ? 0 : max(0, min(6, (int)Context::get('body_preset'))); // 새 파일을 올리면 업로드 이미지 우선
         $args->body_images     = $body_images;
+        $args->media_type      = $mediaType;
+        $args->youtube_url     = $youtubeUrl;
+        $args->youtube_options = json_encode($ytOpt);
         $args->title_text      = $this->_normalizeLangText(Context::get('title_text'), true);
         $args->sub_text        = $this->_normalizeLangText(Context::get('sub_text'), true);
         $args->html_content    = $htmlContent;

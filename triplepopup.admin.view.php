@@ -1,4 +1,5 @@
 <?php
+/* 팝업 플레이 (triplepopup) v3.9.0 · 2026-11-15 · 플레이웹 playwebon.com */
 class triplepopupAdminView extends triplepopup
 {
     function init()
@@ -11,7 +12,14 @@ class triplepopupAdminView extends triplepopup
         $ver  = preg_replace('/[^0-9]/', '', $this->getModuleVersion());
         $cssv = $ver . (int)@filemtime($path . 'tpl/css/admin.css');
         $jsv  = $ver . (int)@filemtime($path . 'tpl/admin/admin.js');
+        // 관리자 화면의 '실제 팝업으로 보기'·효과 미리보기를 위해 프론트 팝업 CSS/JS 도 함께 불러온다 (자동 실행은 끔)
+        $pcssv = $ver . (int)@filemtime($path . 'tpl/css/popup.css');
+        $pjsv  = $ver . (int)@filemtime($path . 'tpl/js/popup.js');
+        $api   = \RX_BASEURL . 'index.php?module=triplepopup&act=getTriplepopupData';
+        Context::addHtmlHeader('<script>window.TRIPLEPOPUP_MANUAL = true; window.TRIPLEPOPUP_API = ' . json_encode($api) . ';</script>');
+        Context::addCSSFile($base . 'tpl/css/popup.css' . ($pcssv ? '?v=' . $pcssv : ''));
         Context::addCSSFile($base . 'tpl/css/admin.css' . ($cssv ? '?v=' . $cssv : ''));
+        Context::addJsFile($base . 'tpl/js/popup.js' . ($pjsv ? '?v=' . $pjsv : ''), false, '', 'body');
         Context::addJsFile($base . 'tpl/admin/admin.js' . ($jsv ? '?v=' . $jsv : ''), false, '', 'body');
     }
 
@@ -96,8 +104,9 @@ class triplepopupAdminView extends triplepopup
     private function getModuleInfo()
     {
         $out = new stdClass();
-        $out->title   = '트리플 팝업';
-        $out->version = '3.2.1';
+        $out->title   = '팝업 플레이';
+        $out->version = '3.9.0';
+        $out->date    = '2026-11-15';
         $out->author  = '플레이웹';
         $out->email   = 'hello@playwebon.com';
         $out->link    = 'https://playwebon.com';
@@ -126,6 +135,8 @@ class triplepopupAdminView extends triplepopup
         $out->title   = $pick($xml->title, $out->title);
         $out->version = $pick($xml->version, $out->version);
         $out->license = $pick($xml->license, $out->license);
+        $date = $pick($xml->date, $out->date);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) $out->date = $date;
 
         if (isset($xml->author)) {
             $attr = $xml->author->attributes();
