@@ -38,6 +38,7 @@ class triplepopup extends ModuleObject
         'card_shadow'         => array('char', 1, 'N'),
         'overlay_dim'         => array('tinyint', 3, 42),
         'target_modules'      => array('text', '', null),
+        'target_categories'   => array('text', '', null),
         'footer_login'        => array('char', 1, 'N'),
         'footer_sns'          => array('char', 1, 'N'),
         'hide_on_document'    => array('char', 1, 'N'),

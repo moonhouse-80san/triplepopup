@@ -562,6 +562,14 @@
                                     <label class="triplepopup-radio"><input type="checkbox" name="hide_on_document" value="Y" <!--@if($slot->hide_on_document === 'Y')-->checked="checked"<!--@end--> /> 게시글 보기 화면에서는 팝업 출력 안 함 (목록 화면에서만 노출)</label>
                                 </div>
 
+                                <div class="triplepopup-field triplepopup-field-full">
+                                    <label>카테고리 <span class="triplepopup-label-hint">카테고리 이름 직접 입력 · 비우면 모든 카테고리</span></label>
+                                    <div class="triplepopup-inputwrap triplepopup-inputwrap-plain">
+                                        <input type="text" name="target_categories" value="{escape($slot->target_categories)}" class="triplepopup-input-flush" placeholder="공지사항, 이벤트" autocomplete="off" spellcheck="false" />
+                                    </div>
+                                    <p class="triplepopup-hint"><b>공지사항, 이벤트</b> 처럼 쉼표로 구분해 입력하면, 카테고리로 들어갔을 때(카테고리 목록 또는 그 카테고리의 글) <b>이름이 맞는 카테고리에서만</b> 노출됩니다. 전체 목록·홈처럼 카테고리가 정해지지 않은 화면에서는 그대로 노출됩니다. 이름은 게시판 카테고리 이름과 똑같이 적어 주세요.</p>
+                                </div>
+
                                 <div class="triplepopup-field">
                                     <label>활성화</label>
                                     <select name="is_active" class="triplepopup-select">

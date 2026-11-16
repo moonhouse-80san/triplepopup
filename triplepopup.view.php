@@ -22,7 +22,7 @@ class triplepopupView extends triplepopup
         // 관리자 미리보기(tp_preview=1): 관리자 로그인 상태에서만 페이지·그룹 조건 없이 등록된 활성 배너를 모두 내려준다
         $logged  = Context::get('logged_info');
         $preview = Context::get('tp_preview') === '1' && $logged && $logged->is_admin === 'Y';
-        $this->add('items',  $oModel->getPopupItemList((int)(Context::get('tp_srl') ?? (isset($page[0]) ? $page[0] : 0)), $mid === null ? null : (string)$mid, $isDocument, $preview));
+        $this->add('items',  $oModel->getPopupItemList((int)(Context::get('tp_srl') ?? (isset($page[0]) ? $page[0] : 0)), $mid === null ? null : (string)$mid, $isDocument, $preview, (string)Context::get('tp_cat')));
         Context::setResponseMethod('JSON');
     }
 }

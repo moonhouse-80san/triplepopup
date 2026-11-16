@@ -26,6 +26,7 @@
     <column name="source_document_srl" type="bigint" size="11" />
     <column name="target_groups"   type="text" />
     <column name="target_modules"  type="text" />
+    <column name="target_categories" type="text" />
     <column name="click_url"       type="varchar"  size="500" />
     <column name="click_target"    type="varchar"  size="10"  default="blank" />
     <column name="footer_text"     type="varchar"  size="200" />

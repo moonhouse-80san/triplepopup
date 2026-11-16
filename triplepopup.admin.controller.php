@@ -423,6 +423,13 @@ class triplepopupAdminController extends triplepopup
         $args->source_document_srl = $sourceSrl;
         $args->target_groups   = implode(',', $targetGroups);
         $args->target_modules  = implode(',', $targetModules);
+        // 카테고리 이름: 쉼표·줄바꿈으로 구분, 태그 제거, 중복 제거, 최대 20개·각 100자
+        $targetCategories = array();
+        foreach (preg_split('/[,，\r\n]+/u', (string)Context::get('target_categories'), -1, PREG_SPLIT_NO_EMPTY) as $name) {
+            $name = mb_substr(trim(strip_tags($name)), 0, 100);
+            if ($name !== '' && !in_array($name, $targetCategories, true) && count($targetCategories) < 20) $targetCategories[] = $name;
+        }
+        $args->target_categories = implode(', ', $targetCategories);
         $args->click_url       = $this->_normalizeUrl(Context::get('click_url'));
         $args->click_target    = (Context::get('click_target') === 'self') ? 'self' : 'blank';
         $args->footer_text     = $this->_normalizeLangText(Context::get('footer_text'));

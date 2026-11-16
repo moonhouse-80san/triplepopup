@@ -28,6 +28,7 @@
         <column name="source_document_srl" var="source_document_srl" />
         <column name="target_groups"   var="target_groups" />
         <column name="target_modules"  var="target_modules" />
+        <column name="target_categories" var="target_categories" />
         <column name="click_url"       var="click_url" />
         <column name="click_target"    var="click_target" />
         <column name="footer_text"     var="footer_text" />

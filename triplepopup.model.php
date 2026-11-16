@@ -127,11 +127,12 @@ class triplepopupModel extends triplepopup
      * 현재 페이지에 노출할 배너 목록.
      * $moduleSrl: 현재 페이지의 모듈 번호, $mid: 현재 페이지의 mid (null 이면 페이지 정보를 모르는 요청이므로 동작 모듈설정 필터를 건너뜀 — 노출 여부는 트리거에서 이미 판단)
      * $isDocument: 게시글(내용글) 보기 화면 여부 — true 이면 '게시글 보기 화면에서는 출력 안 함' 배너를 제외
+     * $categoryTitle: 지금 들어온 카테고리 이름(카테고리 목록 또는 그 카테고리의 글) — 배너에 카테고리 이름을 적었다면 이름이 맞을 때만 노출, 카테고리가 없는 화면('')에서는 그대로 노출
      * $preview: 관리자 미리보기 — true 이면 페이지·모듈·회원그룹 조건과 로그인 숨김을 적용하지 않고 노출 기간이 맞는 활성 배너를 모두 반환
      * - 배너에 '노출 모듈'이 직접 입력되어 있으면 해당 모듈 번호에서만 노출 (동작 모듈설정보다 우선)
      * - 비어 있으면 동작 모듈설정(대상 mid)을 따름 (대상 미지정이면 전체 노출)
      */
-    function getPopupItemList($moduleSrl = 0, $mid = null, $isDocument = false, $preview = false)
+    function getPopupItemList($moduleSrl = 0, $mid = null, $isDocument = false, $preview = false, $categoryTitle = '')
     {
         $targetMids = $this->getPopupConfig()->target_mids;
         $args = new stdClass();
@@ -173,6 +174,15 @@ class triplepopupModel extends triplepopup
             } elseif (!empty($targetMids) && $mid !== null && ($mid === '' || !in_array((string)$mid, $targetMids, true))) {
                 continue;
             }
+
+            // 카테고리 필터: 배너에 직접 입력한 카테고리 이름이 있으면, 카테고리 안에 들어왔을 때 이름이 맞는 경우에만 노출
+            // (전체 목록·홈처럼 카테고리가 정해지지 않은 화면에서는 그대로 노출)
+            $targetCategories = array();
+            foreach (preg_split('/[,，\r\n]+/u', isset($item->target_categories) ? (string)$item->target_categories : '', -1, PREG_SPLIT_NO_EMPTY) as $name) {
+                $targetCategories[] = mb_strtolower(trim($name));
+            }
+            unset($item->target_categories);
+            if (!$preview && !empty($targetCategories) && trim($categoryTitle) !== '' && !in_array(mb_strtolower(trim($categoryTitle)), $targetCategories, true)) continue;
 
             // 기본 배경이미지 선택 시 해당 이미지 사용 (업로드 이미지보다 우선, 언어별 이미지보다는 후순위)
             if (!empty($item->body_preset)) $item->body_image = $this->getPresetImageUrl($item->body_preset);
@@ -346,6 +356,7 @@ class triplepopupModel extends triplepopup
                 $slot->source_document_srl = '';
                 $slot->target_groups   = '';
                 $slot->target_modules  = '';
+            $slot->target_categories = '';
                 $slot->hide_on_document = 'N';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
