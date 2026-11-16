@@ -97,31 +97,35 @@
         return list;
     }
 
+    // 서버 응답({error, config, items})로 팝업을 띄운다 (페이지에 넣어 둔 데이터 · 미리보기 응답 공통)
+    function show(res, opts) {
+        if (!res || res.error !== 0) return;
+        var cfg = res.config || {};
+        var items = res.items;
+        if (opts.preview) {
+            if (!items || !items.length) items = sampleItems();
+            for (var k in (opts.cfg || {})) {
+                if (Object.prototype.hasOwnProperty.call(opts.cfg, k)) cfg[k] = opts.cfg[k];
+            }
+        } else {
+            if (cfg.is_active === 'N') return;
+            if (!items || !items.length) return;
+        }
+        renderPopup(cfg, items, opts);
+    }
+
     // opts.preview: 관리자 미리보기 (쿠키·활성화 설정을 무시하고, opts.cfg 의 값으로 설정을 덮어씀)
     function init(opts) {
         opts = opts || {};
         if (!opts.preview && getCookie(COOKIE_NAME)) return;
+        // 일반 페이지: 서버가 페이지에 넣어 둔 데이터로 바로 그린다 (요청 대기 없음)
+        if (!opts.preview && window.TRIPLEPOPUP_DATA) { show(window.TRIPLEPOPUP_DATA, opts); return; }
         var url = apiUrl + (opts.preview ? (apiUrl.indexOf('?') > -1 ? '&' : '?') + 'tp_preview=1' : '');
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onload = function () {
             if (xhr.status !== 200) return;
-            try {
-                var res = JSON.parse(xhr.responseText);
-                if (res.error !== 0) return;
-                var cfg = res.config || {};
-                var items = res.items;
-                if (opts.preview) {
-                    if (!items || !items.length) items = sampleItems();
-                    for (var k in (opts.cfg || {})) {
-                        if (Object.prototype.hasOwnProperty.call(opts.cfg, k)) cfg[k] = opts.cfg[k];
-                    }
-                } else {
-                    if (cfg.is_active === 'N') return;
-                    if (!items || !items.length) return;
-                }
-                renderPopup(cfg, items, opts);
-            } catch (e) {}
+            try { show(JSON.parse(xhr.responseText), opts); } catch (e) {}
         };
         xhr.send();
     }
@@ -1053,11 +1057,18 @@
             || /^\/admin(\/|$)/.test(window.location.pathname));
     }
 
+    // <head>에서 불러오므로 본문(body)이 생기는 즉시 팝업을 띄워 기본 화면보다 먼저 보이게 한다
+    function whenBody(fn) {
+        if (document.body) { fn(); return; }
+        var observer = new MutationObserver(function () {
+            if (!document.body) return;
+            observer.disconnect();
+            fn();
+        });
+        observer.observe(document.documentElement, { childList: true });
+    }
+
     if (!window.TRIPLEPOPUP_MANUAL) {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function () { if (!isAdminScreen()) init(); });
-        } else if (!isAdminScreen()) {
-            init();
-        }
+        whenBody(function () { if (!isAdminScreen()) init(); });
     }
 }());

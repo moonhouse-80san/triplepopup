@@ -52,8 +52,10 @@ class triplepopupController extends triplepopup
         $cssv = @filemtime($path . 'tpl/css/popup.css');
         $jsv  = @filemtime($path . 'tpl/js/popup.js');
 
-        Context::addHtmlHeader('<script>window.TRIPLEPOPUP_API = ' . json_encode($api) . ';</script>');
+        // 팝업 데이터를 페이지에 바로 넣고 스크립트도 <head>에서 불러와, 별도 요청(AJAX)을 기다리지 않고 본문이 시작되자마자 팝업을 띄운다
+        $data = json_encode(array('error' => 0, 'config' => $oModel->getFrontConfig(), 'items' => $items), JSON_HEX_TAG | JSON_HEX_AMP);
+        Context::addHtmlHeader('<script>window.TRIPLEPOPUP_API = ' . json_encode($api) . '; window.TRIPLEPOPUP_DATA = ' . $data . ';</script>');
         Context::addCSSFile($base . 'tpl/css/popup.css' . ($cssv ? '?v=' . $cssv : ''));
-        Context::addJsFile($base . 'tpl/js/popup.js' . ($jsv ? '?v=' . $jsv : ''), false, '', 'body');
+        Context::addHtmlHeader('<script src="' . $base . 'tpl/js/popup.js' . ($jsv ? '?v=' . $jsv : '') . '"></script>');
     }
 }

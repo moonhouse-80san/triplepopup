@@ -4,6 +4,18 @@ class triplepopupModel extends triplepopup
 {
     function init() {}
 
+    /** 프론트(팝업 화면)용 설정: 접속 언어에 맞는 하단 버튼·로그인 문구(ui)를 붙여 돌려준다 (lang/*.php) */
+    function getFrontConfig()
+    {
+        Context::loadLang(_XE_PATH_ . 'modules/triplepopup/lang');
+        $config = $this->getPopupConfig();
+        $config->ui = new stdClass();
+        foreach (array('today_close', 'days_close', 'close', 'prev', 'next', 'banner_close', 'login_open', 'login_fold', 'sns_login', 'user_id', 'password', 'keep_login', 'login', 'signup', 'need_idpw', 'login_unavailable', 'login_failed') as $key) {
+            $config->ui->{$key} = Context::getLang('tp_' . $key);
+        }
+        return $config;
+    }
+
     /**
      * ZZAN 소셜 로그인(zzan_snslogin) 모듈 설치 여부.
      * 팝업이 불러오는 위젯 스크립트(js/widget.js)까지 있어야 설치된 것으로 본다.

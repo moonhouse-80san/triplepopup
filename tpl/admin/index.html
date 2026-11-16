@@ -562,7 +562,7 @@
                                     <label class="triplepopup-radio"><input type="checkbox" name="hide_on_document" value="Y" <!--@if($slot->hide_on_document === 'Y')-->checked="checked"<!--@end--> /> 게시글 보기 화면에서는 팝업 출력 안 함 (목록 화면에서만 노출)</label>
                                 </div>
 
-                                <div class="triplepopup-field triplepopup-field-full">
+                                <div class="triplepopup-field triplepopup-field-full triplepopup-category-field" <!--@if($slot->hide_on_document === 'Y')-->hidden="hidden"<!--@end-->>
                                     <label>카테고리 <span class="triplepopup-label-hint">카테고리 이름 직접 입력 · 비우면 모든 카테고리</span></label>
                                     <div class="triplepopup-inputwrap triplepopup-inputwrap-plain">
                                         <input type="text" name="target_categories" value="{escape($slot->target_categories)}" class="triplepopup-input-flush" placeholder="공지사항, 이벤트" autocomplete="off" spellcheck="false" />

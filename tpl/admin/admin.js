@@ -403,8 +403,13 @@
                 updatePreview(form);
                 bindPreviewImage(form);
                 updateMedia(form);
+                updateCategoryVisibility(form);
                 form.addEventListener('input', function () { updatePreview(form); updateMedia(form); });
-                form.addEventListener('change', function () { updatePreview(form); updateMedia(form); });
+                form.addEventListener('change', function () {
+                    updatePreview(form);
+                    updateMedia(form);
+                    updateCategoryVisibility(form);
+                });
                 // 다국어 해제(×) 버튼 클릭 후 반영
                 form.addEventListener('click', function (e) {
                     if (e.target && e.target.closest && e.target.closest('.g11n')) {
@@ -966,6 +971,28 @@
                 if (noimg) noimg.hidden = hasImg;
             }
         }
+
+        /* ---------- 게시글 보기 화면 숨김 시 카테고리 영역 토글 ---------- */
+        function updateCategoryVisibility(form) {
+            if (!form) return;
+            var chk = form.querySelector('input[name="hide_on_document"]');
+            var field = form.querySelector('.triplepopup-category-field');
+            if (!field) return;
+            field.hidden = !!(chk && chk.checked);
+        }
+
+        function syncAllCategoryVisibility() {
+            var forms = root.querySelectorAll('.triplepopup-edit form');
+            for (var i = 0; i < forms.length; i++) updateCategoryVisibility(forms[i]);
+        }
+
+        root.addEventListener('change', function (e) {
+            if (e.target && e.target.name === 'hide_on_document') {
+                var form = e.target.form || (e.target.closest && e.target.closest('form'));
+                updateCategoryVisibility(form);
+            }
+        });
+        syncAllCategoryVisibility();
 
         refreshRatio();
 
