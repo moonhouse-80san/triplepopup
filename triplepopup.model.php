@@ -224,6 +224,7 @@ class triplepopupModel extends triplepopup
                     'cover'       => $opt->cover === 'Y',
                     'pause_slide' => $opt->pause_slide === 'Y',
                     'start'       => $opt->start,
+                    'width'       => $opt->width,
                 );
             } else {
                 $item->media_type = 'image';
@@ -370,6 +371,7 @@ class triplepopupModel extends triplepopup
                 $slot->target_modules  = '';
             $slot->target_categories = '';
                 $slot->hide_on_document = 'N';
+                $slot->hide_buttons    = 'N';
                 $slot->click_url       = '';
                 $slot->click_target    = 'blank';
                 $slot->footer_text     = '';
@@ -394,12 +396,14 @@ class triplepopupModel extends triplepopup
                 $slot->{'yt_' . $key} = $ytOpt->{$key};
             }
             $slot->yt_start = $ytOpt->start;
+            $slot->yt_width = ($ytOpt->width > 0) ? $ytOpt->width : '';
 
             // 색상 기본값 보강 (마이그레이션 이전 행 대비)
             if (!isset($slot->badge_text_color)  || $slot->badge_text_color  === '') $slot->badge_text_color  = '#ffffff';
             if (!isset($slot->footer_text_color) || $slot->footer_text_color === '') $slot->footer_text_color = '#ffffff';
             $slot->footer_login = (isset($slot->footer_login) && $slot->footer_login === 'Y') ? 'Y' : 'N';
             $slot->hide_on_document = (isset($slot->hide_on_document) && $slot->hide_on_document === 'Y') ? 'Y' : 'N';
+            $slot->hide_buttons = (isset($slot->hide_buttons) && $slot->hide_buttons === 'Y') ? 'Y' : 'N';
             $slot->footer_sns   = (isset($slot->footer_sns) && $slot->footer_sns === 'Y') ? 'Y' : 'N';
             if (!isset($slot->click_target) || $slot->click_target === '') $slot->click_target = 'blank';
             if (!isset($slot->html_content)) $slot->html_content = '';

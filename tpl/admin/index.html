@@ -212,7 +212,15 @@
                                             <span class="triplepopup-suffix">초</span>
                                         </div>
                                     </div>
-                                    <p class="triplepopup-hint">자동 재생은 브라우저 정책 때문에 <b>음소거 상태에서만</b> 동작합니다.<br />유튜브 배너에는 이미지 위 타이틀과 서브문구가 표시되지 않습니다.<br />선택한 팝업 비율이 영상과 다르면 위아래 또는 좌우에 검은 여백이 생깁니다.<br /><b>영상 꽉 채우기</b>를 켜면 여백 대신 영상을 확대해 칸을 채우고 가장자리가 잘립니다.</p>
+
+                                    <div class="triplepopup-yt-start">
+                                        <span class="triplepopup-yt-start-label">가로 폭</span>
+                                        <div class="triplepopup-inputwrap triplepopup-inputwrap-suffix triplepopup-ctl">
+                                            <input type="number" name="yt_width" value="{$slot->yt_width}" min="180" max="1600" placeholder="기본" class="triplepopup-input-flush" />
+                                            <span class="triplepopup-suffix">px</span>
+                                        </div>
+                                    </div>
+                                    <p class="triplepopup-hint"><b>가로 폭</b>을 비워 두면 모듈 설정의 '팝업 가로 크기'(또는 기본 폭)를 따르고, 값을 넣으면 이 영상 배너만 그 폭(180~1600px)으로 표시됩니다. 화면보다 크면 자동으로 줄어듭니다.<br />자동 재생은 브라우저 정책 때문에 <b>음소거 상태에서만</b> 동작합니다.<br />유튜브 배너에는 이미지 위 타이틀과 서브문구가 표시되지 않습니다.<br />선택한 팝업 비율이 영상과 다르면 위아래 또는 좌우에 검은 여백이 생깁니다.<br /><b>영상 꽉 채우기</b>를 켜면 여백 대신 영상을 확대해 칸을 채우고 가장자리가 잘립니다.</p>
                                 </div>
                                 <div class="triplepopup-field">
                                     <label>머리말 텍스트 <span class="triplepopup-lang-tag">다국어</span></label>
@@ -448,6 +456,12 @@
                                         <span class="triplepopup-suffix">초</span>
                                     </div>
                                     <p class="triplepopup-hint">이 배너만 설정한 시간 뒤에 자동으로 닫히며, 모듈 설정의 '팝업창 자동 종료 Time'보다 우선합니다. 비워 두면(기본) 모듈 설정을 따르고, 0이면 이 배너는 자동으로 닫지 않습니다. 남은 시간은 배너 오른쪽 위 X 옆에 표시됩니다. (최대 3600)</p>
+                                </div>
+
+                                <div class="triplepopup-field triplepopup-field-full">
+                                    <label>닫기 버튼 등 <span class="triplepopup-label-hint">기본: 출력</span></label>
+                                    <label class="triplepopup-radio"><input type="checkbox" name="hide_buttons" value="Y" <!--@if($slot->hide_buttons === 'Y')-->checked="checked"<!--@end--> /> 닫기 버튼 출력 안 함 (배너 X · 오늘하루 그만보기 · 닫기)</label>
+                                    <p class="triplepopup-hint">체크하면 이 배너의 오른쪽 위 <b>X 버튼</b>이 나오지 않습니다. 팝업 아래의 <b>오늘하루 그만보기 · 닫기</b>는 함께 표시되는 모든 배너가 체크된 경우에만 사라집니다. 버튼을 모두 숨기면 방문자가 직접 닫을 수 없으니 <b>자동 종료 Time</b>을 함께 설정하는 것을 권장합니다.</p>
                                 </div>
 
                                 <div class="triplepopup-field">

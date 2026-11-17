@@ -358,14 +358,16 @@
 
         // 가로(카드 폭)만 지정하고 세로는 이미지/HTML 콘텐츠 높이에 맞춰 자동. 고정 비율·영상은 비율대로 높이를 준다.
         function sizeMedias(cardW) {
-            var maxH   = Math.round(window.innerHeight * MAX_MEDIA_VH);
-            var medias = track.querySelectorAll('.triplepopup-pop-media');
-            for (var i = 0; i < medias.length; i++) {
-                var isVid = medias[i].classList.contains('triplepopup-pop-video');
-                if (!fixedRatio && !isVid) { medias[i].style.height = ''; continue; } // 원본 비율: 이미지 자연 높이 사용
-                var ratio = fixedRatio || parseFloat(medias[i].getAttribute('data-ratio'));
+            var maxH  = Math.round(window.innerHeight * MAX_MEDIA_VH);
+            var cells = track.children;
+            for (var i = 0; i < cells.length; i++) {
+                var media = cells[i].querySelector('.triplepopup-pop-media');
+                if (!media) continue;
+                var isVid = media.classList.contains('triplepopup-pop-video');
+                if (!fixedRatio && !isVid) { media.style.height = ''; continue; } // 원본 비율: 이미지 자연 높이 사용
+                var ratio = fixedRatio || parseFloat(media.getAttribute('data-ratio'));
                 if (!ratio || ratio <= 0) ratio = BASE_H / BASE_W;
-                medias[i].style.height = Math.min(Math.round(cardW * ratio), maxH) + 'px';
+                media.style.height = Math.min(Math.round((cells[i]._tpW || cardW) * ratio), maxH) + 'px';
             }
             sizeFrames();
         }
@@ -456,30 +458,84 @@
             overlay.style.setProperty('--tpop-btn-a', btnA.toFixed(3));
         }
 
+        // 이 배너의 카드 폭: 유튜브 배너에 가로 폭이 지정돼 있으면 모듈 설정(팝업 가로 크기)을 무시하고 그 폭, 아니면 공통 폭.
+        // 화면(가로·세로)보다 크면 화면에 맞게 줄인다.
+        function cellWidth(cell) {
+            var item = cell._tpItem || {}, want = 0;
+            if (item.media_type === 'youtube' && item.youtube_id && item.youtube) want = parseInt(item.youtube.width, 10) || 0;
+            if (want < 1) return layout.cardW;
+            var ratio = fixedRatio || (item.youtube_shorts ? (16 / 9) : (9 / 16));
+            var w = Math.min(want, window.innerWidth - 40, Math.floor((window.innerHeight * MAX_MEDIA_VH) / ratio));
+            return Math.max(120, w);
+        }
+
+        // 카드 목록(한 화면에 보이는 묶음)의 전체 가로 길이
+        function winSum(list) {
+            var sum = GAP * (list.length - 1);
+            for (var i = 0; i < list.length; i++) sum += list[i]._tpW;
+            return sum;
+        }
+
+        function firstCells(n) {
+            var cells = track.children, list = [];
+            for (var i = 0; i < n; i++) list.push(cells[i]);
+            return list;
+        }
+
+        // 슬라이드가 돌면서 만들어지는 모든 묶음 중 가장 넓은 가로 길이
+        function maxWindow(n) {
+            var cells = track.children, len = cells.length, best = 0;
+            for (var s = 0; s < (len > n ? len : 1); s++) {
+                var sum = GAP * (n - 1);
+                for (var k = 0; k < n; k++) sum += cells[(s + k) % len]._tpW;
+                if (sum > best) best = sum;
+            }
+            return best;
+        }
+
+        function setWindowWidth(w) {
+            stage.style.width    = w + 'px';
+            viewport.style.width = (w + XPAD * 2) + 'px';
+            bottom.style.width   = w + 'px';
+        }
+
         function applyLayout() {
             applyDim();
             layout = getLayout(count, fixedRatio, cols, widthOverride);
-            var vwTotal = layout.cardW * layout.visible + GAP * (layout.visible - 1);
+
+            // 배너마다 폭을 정한다 (유튜브 배너에 가로 폭을 지정했으면 그 폭, 아니면 공통 폭)
+            var cells = track.children;
+            var total = 0;
+            for (var c = 0; c < cells.length; c++) {
+                cells[c]._tpW = cellWidth(cells[c]);
+                total += cells[c]._tpW;
+            }
+            // 폭이 서로 다르면 한 화면에 들어가는 수가 줄 수 있다 (슬라이드 어느 위치에서도 화면 안에 들어오게)
+            while (layout.visible > 1 && maxWindow(layout.visible) > window.innerWidth - 40) layout.visible--;
+
+            // 하단 버튼(오늘하루 그만보기·닫기): 남은 배너가 모두 '닫기 버튼 출력 안 함'이면 숨긴다
+            var showBottom = false;
+            for (c = 0; c < cells.length; c++) {
+                if (cells[c]._tpItem.hide_buttons !== 'Y') { showBottom = true; break; }
+            }
+            bottom.style.display = showBottom ? '' : 'none';
 
             // 보이는 수보다 카드가 많을 때만 좌우 버튼 노출 + 자동 슬라이드(무한 반복)
             hasOverflow = count > layout.visible;
 
-            stage.style.width     = vwTotal + 'px';
-            viewport.style.width   = (vwTotal + XPAD * 2) + 'px';
-            track.style.width      = (layout.cardW * count + GAP * (count - 1)) + 'px';
-            bottom.style.width     = vwTotal + 'px';
+            track.style.width = (total + GAP * (count - 1)) + 'px';
+            setWindowWidth(winSum(firstCells(layout.visible)));
 
-            var cells = track.children;
-            for (var c = 0; c < cells.length; c++) {
+            for (c = 0; c < cells.length; c++) {
                 var card = cells[c].querySelector('.triplepopup-pop-card');
                 if (card) {
-                    card.style.width    = layout.cardW + 'px';
-                    card.style.minWidth = layout.cardW + 'px';
+                    card.style.width    = cells[c]._tpW + 'px';
+                    card.style.minWidth = cells[c]._tpW + 'px';
                 }
                 // 로그인 패널이 카드보다 넓어 래퍼가 늘어나면 카드가 오른쪽으로 밀리므로 래퍼 폭도 고정
-                cells[c].style.width    = layout.cardW + 'px';
-                cells[c].style.minWidth = layout.cardW + 'px';
-                cells[c].style.maxWidth = layout.cardW + 'px';
+                cells[c].style.width    = cells[c]._tpW + 'px';
+                cells[c].style.minWidth = cells[c]._tpW + 'px';
+                cells[c].style.maxWidth = cells[c]._tpW + 'px';
             }
 
             syncHeights();
@@ -530,8 +586,12 @@
         function goNext() {
             if (!hasOverflow || stepping) return;
             stepping = true;
+            // 다음 카드가 들어오는 동안 잘리지 않도록 현재·다음 화면 중 넓은 쪽 폭을 먼저 적용
+            var nextWin = [], cur = track.children;
+            for (var k = 1; k <= layout.visible; k++) nextWin.push(cur[k]);
+            setWindowWidth(Math.max(winSum(firstCells(layout.visible)), winSum(nextWin)));
             track.style.transition = slideMs();
-            track.style.transform  = 'translateX(-' + (layout.cardW + GAP) + 'px)';
+            track.style.transform  = 'translateX(-' + (track.firstElementChild._tpW + GAP) + 'px)';
             stepTimer = setTimeout(function () {
                 var first = track.firstElementChild;
                 unmountVideo(first); // 노드를 옮기면 영상이 다시 로드되므로 먼저 걷어 낸다
@@ -539,6 +599,7 @@
                 track.appendChild(first);
                 track.style.transform = 'translateX(0)';
                 void track.offsetWidth;
+                setWindowWidth(winSum(firstCells(layout.visible)));
                 stepping = false;
                 syncVideos();
             }, SLIDE_MS + 30);
@@ -547,13 +608,17 @@
         function goPrev() {
             if (!hasOverflow || stepping) return;
             stepping = true;
+            var last = track.lastElementChild, prevWin = [last], cur = track.children;
+            for (var k = 0; k < layout.visible - 1; k++) prevWin.push(cur[k]);
+            setWindowWidth(Math.max(winSum(firstCells(layout.visible)), winSum(prevWin)));
             track.style.transition = 'none';
-            track.insertBefore(track.lastElementChild, track.firstElementChild);
-            track.style.transform = 'translateX(-' + (layout.cardW + GAP) + 'px)';
+            track.insertBefore(last, track.firstElementChild);
+            track.style.transform = 'translateX(-' + (last._tpW + GAP) + 'px)';
             void track.offsetWidth;
             track.style.transition = slideMs();
             track.style.transform  = 'translateX(0)';
             stepTimer = setTimeout(function () {
+                setWindowWidth(winSum(firstCells(layout.visible)));
                 stepping = false;
                 syncVideos();
             }, SLIDE_MS + 30);
@@ -854,21 +919,23 @@
             cell.appendChild(buildAuthBox(item, borderW));
         }
 
-        // 우측 상단 X 버튼 — 이 배너만 닫기
-        var xBtn = document.createElement('button');
-        xBtn.type = 'button';
-        xBtn.className = 'triplepopup-pop-card-close';
-        xBtn.setAttribute('aria-label', t('banner_close', '이 배너 닫기'));
-        xBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
-        xBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            onClose(cell);
-        });
-        cell.appendChild(xBtn);
+        // 우측 상단 X 버튼 — 이 배너만 닫기 (배너 옵션 '닫기 버튼 출력 안 함'이면 만들지 않는다)
+        if (item.hide_buttons !== 'Y') {
+            var xBtn = document.createElement('button');
+            xBtn.type = 'button';
+            xBtn.className = 'triplepopup-pop-card-close';
+            xBtn.setAttribute('aria-label', t('banner_close', '이 배너 닫기'));
+            xBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
+            xBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                onClose(cell);
+            });
+            cell.appendChild(xBtn);
+        }
 
-        // 배너별 자동 종료 남은 시간 표시 칸 (숫자는 팝업 쪽 타이머가 갱신)
+        // 배너별 자동 종료 남은 시간 표시 칸 (숫자는 팝업 쪽 타이머가 갱신) — '닫기 버튼 출력 안 함'이면 숫자도 표시하지 않는다
         var autoSec = autoSecOf(item);
-        if (autoSec > 0) {
+        if (autoSec > 0 && item.hide_buttons !== 'Y') {
             var counter = document.createElement('span');
             counter.className   = 'triplepopup-pop-card-count';
             counter.textContent = autoSec;

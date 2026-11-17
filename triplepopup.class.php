@@ -42,6 +42,7 @@ class triplepopup extends ModuleObject
         'footer_login'        => array('char', 1, 'N'),
         'footer_sns'          => array('char', 1, 'N'),
         'hide_on_document'    => array('char', 1, 'N'),
+        'hide_buttons'        => array('char', 1, 'N'),
         'media_type'          => array('varchar', 10, 'image'),
         'youtube_url'         => array('varchar', 300, null),
         'youtube_options'     => array('text', '', null),
@@ -218,6 +219,8 @@ class triplepopup extends ModuleObject
             $out->{$key} = isset($data[$key]) ? ($data[$key] === 'Y' ? 'Y' : 'N') : $default;
         }
         $out->start = isset($data['start']) ? max(0, min(86400, (int)$data['start'])) : 0;
+        // 가로 폭(px): 0 = 지정 안 함 (모듈 설정 '팝업 가로 크기'·기본 폭을 따름)
+        $out->width = (isset($data['width']) && (int)$data['width'] > 0) ? max(180, min(1600, (int)$data['width'])) : 0;
         if ($out->autoplay === 'Y') $out->mute = 'Y';
         return $out;
     }

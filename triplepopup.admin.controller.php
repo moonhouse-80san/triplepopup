@@ -297,6 +297,8 @@ class triplepopupAdminController extends triplepopup
         }
         if ($ytOpt['autoplay'] === 'Y') $ytOpt['mute'] = 'Y'; // 자동 재생은 음소거 상태에서만 동작
         $ytOpt['start'] = max(0, min(86400, (int)Context::get('yt_start')));
+        $ytWidth = (int)Context::get('yt_width'); // 비우면 0 = 모듈 설정을 따름
+        $ytOpt['width'] = ($ytWidth > 0) ? max(180, min(1600, $ytWidth)) : 0;
 
         // 이미지 위 HTML: 업로드 처리 전에 검증하여 실패 시 고아 파일이 남지 않게 한다.
         // HTMLFilter 로 script · 이벤트 속성 · javascript: 링크 등 XSS 요소를 제거한 값만 저장 (class 와 에디터 컴포넌트는 허용)
@@ -450,6 +452,15 @@ class triplepopupAdminController extends triplepopup
         } else {
             $output = executeQuery('triplepopup.insertPopupItem', $args);
         }
+        if (!$output->toBool()) {
+            return $this->setError(-1, '저장 중 오류가 발생했습니다: ' . $output->getMessage());
+        }
+
+        // 닫기 버튼 출력 안 함: 새 쿼리 파일로 따로 저장 (기존 쿼리의 컴파일 캐시가 남아 있어도 반영되게 한다)
+        $btnArgs = new stdClass();
+        $btnArgs->slot_number  = $slot_number;
+        $btnArgs->hide_buttons = (Context::get('hide_buttons') === 'Y') ? 'Y' : 'N';
+        $output = executeQuery('triplepopup.updatePopupItemHideButtons', $btnArgs);
         if (!$output->toBool()) {
             return $this->setError(-1, '저장 중 오류가 발생했습니다: ' . $output->getMessage());
         }
